@@ -1,0 +1,23 @@
+﻿@using ChampionsLeagueTickets.ViewModels;
+@model IEnumerable<ClubVM>;
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Calendar by team</h1>
+
+<form>
+    <label for="ClubName">Select your Club</label>
+    <select id="ClubName">
+        @{
+            foreach (ClubVM Club in Model) {
+                <option value=@Club.Name>@Club.Name</option>
+            }
+        }
+    </select>
+    <button type="submit" asp-action="Details" asp-controller="Calendar">View Calendar</button>
+</form>
+
+
+

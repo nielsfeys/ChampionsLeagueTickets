@@ -16,20 +16,36 @@ public class CalendarController : Controller {
     }
 
     public IActionResult Index() {
-        IEnumerable<Club> Clubs = _calendarService.GetAllClubs();
-        List<ClubVM>? ClubVMs = null;
-
-        if (Clubs != null) {
-            ClubVMs = _mapper.Map<List<ClubVM>>(Clubs);
-        }
-
-        return View(ClubVMs);
+        ViewBag.Clubs = _calendarService.GetAllClubs();
+        var Matches = _calendarService.GetAllMatches();
+        var MatchVMs = MatchToMatchVM(Matches);
+        return View(MatchVMs);
     }
 
     [HttpPost]
-    public IActionResult Detail(string ClubName) {
+    public IActionResult Index(string clubName) {
+        IEnumerable<Match> Matches;
+        if (clubName == "All") {
+            Matches = _calendarService.GetAllMatches();
+        } else {
+            Matches = _calendarService.GetMatches(clubName);
+        }
 
-        return View();
+        var MatchVMs = MatchToMatchVM(Matches);
+       
+
+        return PartialView("_TeamMatchDetails", MatchVMs);
+    }
+
+    private List<MatchVM>? MatchToMatchVM(IEnumerable<Match>? matches) {
+        List<MatchVM>? MatchVMs = null;
+
+        if (matches != null) {
+            MatchVMs = _mapper.Map<List<MatchVM>>(matches);
+        }
+
+        return MatchVMs;
+
     }
 }
 

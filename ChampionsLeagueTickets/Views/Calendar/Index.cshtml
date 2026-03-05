@@ -1,5 +1,6 @@
-﻿@using ChampionsLeagueTickets.ViewModels;
-@model IEnumerable<ClubVM>;
+﻿@using ChampionsLeagueTickets.Domain.Entities;
+@using ChampionsLeagueTickets.ViewModels;
+@model IEnumerable<MatchVM>;
 
 @{
     ViewData["Title"] = "Index";
@@ -7,17 +8,54 @@
 
 <h1>Calendar by team</h1>
 
-<form>
-    <label for="ClubName">Select your Club</label>
-    <select id="ClubName">
+<form id="ClubSelect" asp-action="Index" asp-controller="Calendar" method="post"
+    data-ajax="true" data-ajax-method="post" data-ajax-mode="replace" data-ajax-update="#MatchTable">
+    <label for="clubName">Select your Club</label>
+    <select id="clubName" name="clubName">
+        <option value="All" selected>No filter</option>
         @{
-            foreach (ClubVM Club in Model) {
-                <option value=@Club.Name>@Club.Name</option>
+            foreach (Club club in ViewBag.Clubs) {
+                <option value=@club.Name>@club.Name</option>
             }
         }
     </select>
-    <button type="submit" asp-action="Details" asp-controller="Calendar">View Calendar</button>
 </form>
 
+<hr />
+
+<div id="MatchTable">
+    @if (Model == null || !Model.Any()) {
+        <p>No matches found .</p>
+    } else {
+        <table id="MatchTable" class="table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Home Team</th>
+                    <th>Away Team</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model) {
+                    <tr>
+                        <td>@item.Date</td>
+                        <td>@item.HomeTeam</td>
+                        <td>@item.AwayTeam</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@section Scripts{
+    <script>
+        $(function () {
+            $("#ClubSelect").on("change", function() {
+                $(this).closest("form").trigger("submit");
+            });
+        });
+    </script>
+}
 
 

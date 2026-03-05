@@ -1,0 +1,27 @@
+﻿@using ChampionsLeagueTickets.ViewModels;
+@model IEnumerable<MatchVM>
+
+
+@if (Model == null || !Model.Any()) {
+    <p>No matches found.</p>
+}
+else {
+    <table id="MatchTable" class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Home Team</th>
+                <th>Away Team</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model) {
+                <tr>
+                    <td>@item.Date</td>
+                    <td>@item.HomeTeam</td>
+                    <td>@item.AwayTeam</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -1,0 +1,40 @@
+﻿@using ChampionsLeagueTickets.Domain.Entities;
+@using ChampionsLeagueTickets.ViewModels;
+@model IEnumerable<StadiumVM>;
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Stadium Info</h1>
+
+<form id="ClubSelect" asp-action="IndexWithFilter" asp-controller="Stadium" method="get"
+    data-ajax="true" data-ajax-method="get" data-ajax-mode="replace" data-ajax-update="#StadiumInfo">
+    <label for="clubName">Select your Club</label>
+    <select id="clubName" name="clubName">
+        <option value="All" selected disabled>No filter</option>
+        @{
+            foreach (Club club in ViewBag.Clubs) {
+                <option value=@club.Name>@club.Name</option>
+            }
+        }
+    </select>
+</form>
+
+<hr />
+
+<div id="StadiumInfo">
+    Select a team to get info about their stadium.
+</div>
+
+@section Scripts{
+    <script>
+        $(function () {
+            $("#ClubSelect").on("change", function() {
+                $(this).closest("form").trigger("submit");
+            });
+        });
+    </script>
+}
+
+

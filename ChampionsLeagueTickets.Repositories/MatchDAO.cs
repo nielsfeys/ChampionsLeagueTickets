@@ -9,25 +9,25 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ChampionsLeagueTickets.Repositories;
-public class MatchDAO(ChampionsLeagueDbContext dbContext) : IMatchDAO {
+public class MatchDAO(ChampionsLeagueDbContext dbContext) : IDAO<Match> {
     private readonly ChampionsLeagueDbContext _dbContext = dbContext;
 
-    public IEnumerable<Match> GetMatches(string club) {
-        return _dbContext.Matches
+    public async Task<IEnumerable<Match>?> GetAllByNameAsync(string clubName) {
+        return  await _dbContext.Matches
             .Include(m => m.HometeamNavigation)
             .Include(m => m.AwayteamNavigation)
             .Where(m =>
-                m.HometeamNavigation.Name == club ||
-                m.AwayteamNavigation.Name == club)
+                m.HometeamNavigation.Name == clubName ||
+                m.AwayteamNavigation.Name == clubName)
             .OrderBy(m => m.Date)
-            .ToList();
+            .ToListAsync();
     }
 
-    public IEnumerable<Match> GetAllMatches() {
-        return _dbContext.Matches
+    public async Task<IEnumerable<Match>?> GetAllAsync() {
+        return await _dbContext.Matches
             .Include(m => m.HometeamNavigation)
             .Include(m => m.AwayteamNavigation)
-            .ToList();
+            .ToListAsync();
     }
 
 }

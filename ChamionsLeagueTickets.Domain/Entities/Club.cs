@@ -15,5 +15,5 @@ public partial class Club
 
     public virtual ICollection<Match> MatchHometeamNavigations { get; set; } = new List<Match>();
 
-    public virtual ICollection<Stadiumsection> Stadiumsections { get; set; } = new List<Stadiumsection>();
+    public virtual ICollection<StadiumSection> Stadiumsections { get; set; } = new List<StadiumSection>();
 }

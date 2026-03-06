@@ -6,8 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ChampionsLeagueTickets.Repositories.Interfaces;
-public interface IMatchDAO {
-    public IEnumerable<Match> GetMatches(string club);
-    public IEnumerable<Match> GetAllMatches();
+public interface IDAO<T> where T : class {
+    Task<IEnumerable<T>?> GetAllAsync();
+    Task<IEnumerable<T>?> GetAllByNameAsync(string name);
 }
 

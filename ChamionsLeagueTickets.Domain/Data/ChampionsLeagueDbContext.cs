@@ -18,7 +18,7 @@ public partial class ChampionsLeagueDbContext : DbContext
 
     public virtual DbSet<Match> Matches { get; set; }
 
-    public virtual DbSet<Stadiumsection> Stadiumsections { get; set; }
+    public virtual DbSet<StadiumSection> Stadiumsections { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -55,7 +55,7 @@ public partial class ChampionsLeagueDbContext : DbContext
                 .HasConstraintName("FK_Match_Home_Team");
         });
 
-        modelBuilder.Entity<Stadiumsection>(entity =>
+        modelBuilder.Entity<StadiumSection>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK_stadiumvakken_1");
 

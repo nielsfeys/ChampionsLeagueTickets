@@ -7,28 +7,29 @@ using Microsoft.AspNetCore.Mvc;
 namespace ChampionsLeagueTickets.Controllers;
 public class CalendarController : Controller {
 
-    private readonly ICalendarService _calendarService;
+    private readonly IService<Club> _clubService;
+    private readonly IService<Match> _matchService;
     private readonly IMapper _mapper;
 
-    public CalendarController(ICalendarService calendarService, IMapper mapper) {
-        _calendarService = calendarService;
+    public CalendarController(IService<Club> clubService, IService<Match> matchService, IMapper mapper) {
+        _clubService = clubService;
+        _matchService = matchService;
         _mapper = mapper;
     }
 
-    public IActionResult Index() {
-        ViewBag.Clubs = _calendarService.GetAllClubs();
-        var Matches = _calendarService.GetAllMatches();
+    public async Task<IActionResult> Index() {
+        ViewBag.Clubs = await _clubService.GetAllAsync();
+        var Matches = await _matchService.GetAllAsync();
         var MatchVMs = MatchToMatchVM(Matches);
         return View(MatchVMs);
     }
 
-    [HttpPost]
-    public IActionResult Index(string clubName) {
-        IEnumerable<Match> Matches;
+    public async Task<IActionResult> IndexWithFilter(string clubName) {
+        IEnumerable<Match>? Matches;
         if (clubName == "All") {
-            Matches = _calendarService.GetAllMatches();
+            Matches = await _matchService.GetAllAsync();
         } else {
-            Matches = _calendarService.GetMatches(clubName);
+            Matches = await _matchService.GetAllByNameAsync(clubName);
         }
 
         var MatchVMs = MatchToMatchVM(Matches);

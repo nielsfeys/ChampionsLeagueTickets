@@ -1,0 +1,28 @@
+﻿@using ChampionsLeagueTickets.ViewModels
+@model StadiumVM;
+
+@if (@Model.SectionVMs.Count() == 0) {
+        <p>This stadiums has no seats allocated yet</p>
+} else {
+        <p>The stadium of @Model.SectionVMs[0].HomeTeam has @Model.TotalSeats() seats</p>
+        <p>Detailed view of the sections:</p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Section</th>
+                    <th>Seats</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach(var item in Model.SectionVMs) {
+                <tr>
+                    <td>@item.SectionName</td>
+                    <td>@item.Seats</td>
+                    
+                </tr>
+            }
+            </tbody>
+        </table>
+}
+
+

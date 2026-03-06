@@ -1,5 +1,6 @@
 using ChampionsLeagueTickets.Data;
 using ChampionsLeagueTickets.Domain.Data;
+using ChampionsLeagueTickets.Domain.Entities;
 using ChampionsLeagueTickets.Models;
 using ChampionsLeagueTickets.Repositories;
 using ChampionsLeagueTickets.Repositories.Interfaces;
@@ -25,10 +26,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDbContext<ChampionsLeagueDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddScoped<IClubDAO, ClubDAO>();
-builder.Services.AddScoped<IMatchDAO, MatchDAO>();
+builder.Services.AddScoped<IDAO<Club>, ClubDAO>();
+builder.Services.AddScoped<IDAO<Match>, MatchDAO>();
+builder.Services.AddScoped<IDAO<StadiumSection>, StadiumSectionDAO>();
 
-builder.Services.AddScoped<ICalendarService, CalendarService>();
+builder.Services.AddScoped<IService<Club>, ClubService>();
+builder.Services.AddScoped<IService<Match>, MatchService>();
+builder.Services.AddScoped<IService<StadiumSection>, StadiumSectionService>();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

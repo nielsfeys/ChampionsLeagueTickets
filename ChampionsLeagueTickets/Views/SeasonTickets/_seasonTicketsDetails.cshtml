@@ -1,0 +1,25 @@
+﻿@using ChampionsLeagueTickets.ViewModels
+@model StadiumVM;
+
+@if (@Model.SectionVMs.Count() == 0) {
+    <p>This stadium has no sections for which you can buy seats! </p>
+}
+else {
+    <p>Select a section for which you wish to buy a season ticket:</p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Section</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.SectionVMs) {
+                <tr>
+                    <td>@item.SectionName</td>
+                    <td><a asp-action="Select" asp-route-sectionId="@item.Id">Add to shoppingcart</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

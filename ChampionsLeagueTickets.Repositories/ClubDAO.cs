@@ -20,4 +20,8 @@ public class ClubDAO(ChampionsLeagueDbContext dbContext) : IDAO<Club> {
         throw new NotImplementedException();
     }
 
+    public Task<Club?> FindByIdAsync(int id) {
+        throw new NotImplementedException();
+    }
+
 }

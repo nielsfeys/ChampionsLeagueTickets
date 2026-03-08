@@ -9,7 +9,7 @@
 <h1>Calendar by team</h1>
 
 <form id="ClubSelect" asp-action="IndexWithFilter" asp-controller="Calendar" method="get"
-    data-ajax="true" data-ajax-method="get" data-ajax-mode="replace" data-ajax-update="#MatchTable">
+    data-ajax="true" data-ajax-method="get" data-ajax-mode="replace" data-ajax-update="#MatchInfo">
     <label for="clubName">Select your Club</label>
     <select id="clubName" name="clubName">
         <option value="All" selected>No filter</option>
@@ -23,29 +23,8 @@
 
 <hr />
 
-<div id="MatchTable">
-    @if (Model == null || !Model.Any()) {
-        <p>No matches found .</p>
-    } else {
-        <table id="MatchTable" class="table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Home Team</th>
-                    <th>Away Team</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model) {
-                    <tr>
-                        <td>@item.Date</td>
-                        <td>@item.HomeTeam</td>
-                        <td>@item.AwayTeam</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+<div id="MatchInfo">
+    <partial name="_teamMatchDetails" />
 </div>
 
 @section Scripts{

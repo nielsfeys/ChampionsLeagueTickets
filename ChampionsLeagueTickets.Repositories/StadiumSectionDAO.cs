@@ -23,5 +23,12 @@ public class StadiumSectionDAO(ChampionsLeagueDbContext dbContext) : IDAO<Stadiu
             .ToListAsync();
     }
 
+    public async Task<StadiumSection?> FindByIdAsync(int id) {
+        return await _dbContext.Stadiumsections
+            .Include(s => s.HomeTeamNavigation)
+            .Where(s => s.Id == id)
+            .FirstOrDefaultAsync();
+    }
+
 }
 

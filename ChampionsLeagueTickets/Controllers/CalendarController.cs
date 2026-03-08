@@ -5,17 +5,11 @@ using ChampionsLeagueTickets.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChampionsLeagueTickets.Controllers;
-public class CalendarController : Controller {
+public class CalendarController(IService<Club> clubService, IService<Match> matchService, IMapper mapper) : Controller {
 
-    private readonly IService<Club> _clubService;
-    private readonly IService<Match> _matchService;
-    private readonly IMapper _mapper;
-
-    public CalendarController(IService<Club> clubService, IService<Match> matchService, IMapper mapper) {
-        _clubService = clubService;
-        _matchService = matchService;
-        _mapper = mapper;
-    }
+    private readonly IService<Club> _clubService = clubService;
+    private readonly IService<Match> _matchService = matchService;
+    private readonly IMapper _mapper = mapper;
 
     public async Task<IActionResult> Index() {
         ViewBag.Clubs = await _clubService.GetAllAsync();

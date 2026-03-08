@@ -12,6 +12,7 @@ else {
                 <th>Date</th>
                 <th>Home Team</th>
                 <th>Away Team</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -20,6 +21,9 @@ else {
                     <td>@item.Date</td>
                     <td>@item.HomeTeam</td>
                     <td>@item.AwayTeam</td>
+                    <td>
+                        <a asp-controller="Tickets" asp-action="Index" asp-route-matchId="@item.Id">Buy Tickets</a>
+                    </td>
                 </tr>
             }
         </tbody>

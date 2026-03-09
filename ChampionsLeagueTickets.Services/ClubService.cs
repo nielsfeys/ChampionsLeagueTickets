@@ -24,5 +24,9 @@ public class ClubService : IService<Club> {
     public async Task<IEnumerable<Club>?> GetAllByNameAsync(string name) {
         throw new NotImplementedException();
     }
+
+    public async Task<Club?> FindByIdAsync(int id) {
+        throw new NotImplementedException(); 
+    }
 }
 

@@ -45,6 +45,14 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 builder.Services.AddControllersWithViews();
 
+
+builder.Services.AddSession(options => {
+    options.Cookie.Name = "ChampionsLeagueTickets.Session";
+    options.IdleTimeout = TimeSpan.FromMinutes(1);
+    }
+);
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -59,6 +67,8 @@ else {
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthorization();
 

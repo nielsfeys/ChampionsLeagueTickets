@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ChampionsLeagueTickets.Domain.Entities;
+using ChampionsLeagueTickets.Extensions;
 using ChampionsLeagueTickets.Services.Interfaces;
 using ChampionsLeagueTickets.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +27,5 @@ public class StadiumController(IService<Club> clubService, IService<StadiumSecti
         }
 
         return PartialView("_stadiumDetails", StadiumVM);
-    }
-    
+    }    
 }

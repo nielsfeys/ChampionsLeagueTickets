@@ -22,6 +22,9 @@ public class MatchService : IService<Match> {
         return await _matchDAO.GetAllByNameAsync(clubName);
     }
 
+    public async Task<Match?> FindByIdAsync(int id){
+        throw new NotImplementedException();
+    }
 
 }
 

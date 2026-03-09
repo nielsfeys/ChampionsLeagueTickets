@@ -9,5 +9,6 @@ namespace ChampionsLeagueTickets.Repositories.Interfaces;
 public interface IDAO<T> where T : class {
     Task<IEnumerable<T>?> GetAllAsync();
     Task<IEnumerable<T>?> GetAllByNameAsync(string name);
+    Task<T?> FindByIdAsync(int id);
 }
 

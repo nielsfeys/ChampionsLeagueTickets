@@ -3,13 +3,13 @@
 @model IEnumerable<StadiumVM>;
 
 @{
-    ViewData["Title"] = "Stadium Details - Index";
+    ViewData["Title"] = "Index";
 }
 
-<h1>Stadium Info</h1>
+<h1>Season Tickets</h1>
 
-<form id="ClubSelect" asp-action="IndexWithFilter" asp-controller="Stadium" method="get"
-    data-ajax="true" data-ajax-method="get" data-ajax-mode="replace" data-ajax-update="#StadiumInfo">
+<form id="ClubSelect" asp-action="IndexWithFilter" asp-controller="SeasonTickets" method="get"
+      data-ajax="true" data-ajax-method="get" data-ajax-mode="replace" data-ajax-update="#SeasonTicketsInfo">
     <label for="clubName">Select your Club</label>
     <select id="clubName" name="clubName">
         <option value="All" selected disabled>No filter</option>
@@ -23,11 +23,18 @@
 
 <hr />
 
-<div id="StadiumInfo">
-    Select a team to get info about their stadium.
+<div id="SeasonTicketsInfo">
+    @if (TempData["Error"] != null) {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    @if (TempData["Success"] != null) {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    <div>Select a team to buy a Season Ticket.</div>
 </div>
 
-@section Scripts{
+@section Scripts {
     <script>
         $(function () {
             $("#ClubSelect").on("change", function() {
@@ -36,5 +43,3 @@
         });
     </script>
 }
-
-

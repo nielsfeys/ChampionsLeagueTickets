@@ -9,7 +9,7 @@
 <h1>Calendar by team</h1>
 
 <form id="ClubSelect" asp-action="IndexWithFilter" asp-controller="Calendar" method="get"
-    data-ajax="true" data-ajax-method="get" data-ajax-mode="replace" data-ajax-update="#MatchTableDiv">
+    data-ajax="true" data-ajax-method="get" data-ajax-mode="replace" data-ajax-update="#MatchInfo">
     <label for="clubName">Select your Club</label>
     <select id="clubName" name="clubName">
         <option value="All" selected>No filter</option>
@@ -23,8 +23,8 @@
 
 <hr />
 
-<div id="MatchTableDiv">
-    <partial name="_TeamMatchDetails" model="Model" />
+<div id="MatchInfo">
+    <partial name="_teamMatchDetails" />
 </div>
 
 @section Scripts{

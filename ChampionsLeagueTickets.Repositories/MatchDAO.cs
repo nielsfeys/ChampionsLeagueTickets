@@ -30,5 +30,9 @@ public class MatchDAO(ChampionsLeagueDbContext dbContext) : IDAO<Match> {
             .ToListAsync();
     }
 
+    public async Task<Match?> FindByIdAsync(int id) {
+        throw new NotImplementedException();
+    }
+
 }
 

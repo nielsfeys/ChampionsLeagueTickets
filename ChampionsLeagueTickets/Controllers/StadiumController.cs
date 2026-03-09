@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ChampionsLeagueTickets.Controllers;
-public class StadiumController(IService<Club> clubService, IService<StadiumSection> stadiumSectionService, IMapper mapper) : Controller {
-    private readonly IService<Club> _clubService = clubService;
-    private readonly IService<StadiumSection> _stadiumSectionService = stadiumSectionService;
+public class StadiumController(IClubService clubService, IStadiumSectionService stadiumSectionService, IMapper mapper) : Controller {
+    private readonly IClubService _clubService = clubService;
+    private readonly IStadiumSectionService _stadiumSectionService = stadiumSectionService;
     private readonly IMapper _mapper = mapper;
 
     public async Task<IActionResult> Index() {
@@ -19,7 +19,7 @@ public class StadiumController(IService<Club> clubService, IService<StadiumSecti
     }
 
     public async Task<IActionResult> IndexWithFilter(string clubName) {
-        IEnumerable<StadiumSection>? StadiumSections = await _stadiumSectionService.GetAllByNameAsync(clubName);
+        IEnumerable<StadiumSection>? StadiumSections = await _stadiumSectionService.GetAllByClubNameAsync(clubName);
         StadiumVM StadiumVM = new();
 
         if (StadiumSections != null) {

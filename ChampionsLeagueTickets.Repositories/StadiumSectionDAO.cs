@@ -2,21 +2,12 @@
 using ChampionsLeagueTickets.Domain.Entities;
 using ChampionsLeagueTickets.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ChampionsLeagueTickets.Repositories;
-public class StadiumSectionDAO(ChampionsLeagueDbContext dbContext) : IDAO<StadiumSection> {
+public class StadiumSectionDAO(ChampionsLeagueDbContext dbContext) : IStadiumSectionDAO {
     private readonly ChampionsLeagueDbContext _dbContext = dbContext;
 
-    public async Task<IEnumerable<StadiumSection>?> GetAllAsync() {
-        throw new NotImplementedException();
-    }
-
-    public async Task<IEnumerable<StadiumSection>?> GetAllByNameAsync(string clubName) {
+    public async Task<IEnumerable<StadiumSection>?> GetAllByClubNameAsync(string clubName) {
         return await _dbContext.Stadiumsections
             .Include(s => s.HomeTeamNavigation)
             .Where(s => s.HomeTeamNavigation.Name == clubName)

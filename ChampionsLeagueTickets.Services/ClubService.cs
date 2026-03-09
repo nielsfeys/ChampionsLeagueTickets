@@ -10,23 +10,15 @@ using System.Threading.Tasks;
 
 
 namespace ChampionsLeagueTickets.Services;
-public class ClubService : IService<Club> {
-    public readonly IDAO<Club> _clubDAO;
+public class ClubService : IClubService {
+    public readonly IClubDAO _clubDAO;
 
-    public ClubService(IDAO<Club> clubDAO) {
+    public ClubService(IClubDAO clubDAO) {
         _clubDAO = clubDAO;
     }
 
     public async Task<IEnumerable<Club>?> GetAllAsync() {
         return await _clubDAO.GetAllAsync();
-    }
-
-    public async Task<IEnumerable<Club>?> GetAllByNameAsync(string name) {
-        throw new NotImplementedException();
-    }
-
-    public async Task<Club?> FindByIdAsync(int id) {
-        throw new NotImplementedException(); 
     }
 }
 

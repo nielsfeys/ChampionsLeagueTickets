@@ -9,19 +9,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ChampionsLeagueTickets.Repositories;
-public class ClubDAO(ChampionsLeagueDbContext dbContext) : IDAO<Club> {
+public class ClubDAO(ChampionsLeagueDbContext dbContext) : IClubDAO {
     private readonly ChampionsLeagueDbContext _dbContext = dbContext;
 
     public async Task<IEnumerable<Club>?> GetAllAsync() {
         return await _dbContext.Clubs.ToListAsync();
     }
-
-    public Task<IEnumerable<Club>?> GetAllByNameAsync(string name) {
-        throw new NotImplementedException();
-    }
-
-    public Task<Club?> FindByIdAsync(int id) {
-        throw new NotImplementedException();
-    }
-
 }

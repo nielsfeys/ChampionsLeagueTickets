@@ -26,13 +26,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDbContext<ChampionsLeagueDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddScoped<IDAO<Club>, ClubDAO>();
-builder.Services.AddScoped<IDAO<Match>, MatchDAO>();
-builder.Services.AddScoped<IDAO<StadiumSection>, StadiumSectionDAO>();
+builder.Services.AddScoped<IClubDAO, ClubDAO>();
+builder.Services.AddScoped<IMatchDAO, MatchDAO>();
+builder.Services.AddScoped<IStadiumSectionDAO, StadiumSectionDAO>();
 
-builder.Services.AddScoped<IService<Club>, ClubService>();
-builder.Services.AddScoped<IService<Match>, MatchService>();
-builder.Services.AddScoped<IService<StadiumSection>, StadiumSectionService>();
+builder.Services.AddScoped<IClubService, ClubService>();
+builder.Services.AddScoped<IMatchService, MatchService>();
+builder.Services.AddScoped<IStadiumSectionService, StadiumSectionService>();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

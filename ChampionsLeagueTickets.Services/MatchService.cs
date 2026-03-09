@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ChampionsLeagueTickets.Services;
-public class MatchService : IService<Match> {
-    public readonly IDAO<Match> _matchDAO;
-    public MatchService(IDAO<Match> matchDAO) {
+public class MatchService : IMatchService {
+    public readonly IMatchDAO _matchDAO;
+    public MatchService(IMatchDAO matchDAO) {
         _matchDAO = matchDAO;
     }
 
@@ -22,8 +22,8 @@ public class MatchService : IService<Match> {
         return await _matchDAO.GetAllByNameAsync(clubName);
     }
 
-    public async Task<Match?> FindByIdAsync(int id){
-        throw new NotImplementedException();
+    public async Task<Match?> GetByIdAsync(int id) {
+        return await _matchDAO.GetByIdAsync(id);
     }
 
 }

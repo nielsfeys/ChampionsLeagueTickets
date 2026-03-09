@@ -7,10 +7,10 @@ using ChampionsLeagueTickets.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChampionsLeagueTickets.Controllers;
-public class SeasonTicketsController(IService<Club> clubService, IService<StadiumSection> stadiumSectionService, IMapper mapper) : Controller {
+public class SeasonTicketsController(IClubService clubService, IStadiumSectionService stadiumSectionService, IMapper mapper) : Controller {
 
-    private readonly IService<Club> _clubService = clubService;
-    private readonly IService<StadiumSection> _stadiumSectionService = stadiumSectionService;
+    private readonly IClubService _clubService = clubService;
+    private readonly IStadiumSectionService _stadiumSectionService = stadiumSectionService;
     private readonly IMapper _mapper = mapper;
 
     public async Task<IActionResult> Index() {
@@ -23,7 +23,7 @@ public class SeasonTicketsController(IService<Club> clubService, IService<Stadiu
             return RedirectToAction(nameof(Index));
         }
 
-        IEnumerable<StadiumSection>? StadiumSections = await _stadiumSectionService.GetAllByNameAsync(clubName);
+        IEnumerable<StadiumSection>? StadiumSections = await _stadiumSectionService.GetAllByClubNameAsync(clubName);
         StadiumVM StadiumVM = new();
 
         if (StadiumSections != null) {
@@ -33,7 +33,9 @@ public class SeasonTicketsController(IService<Club> clubService, IService<Stadiu
         return PartialView("_seasonTicketsDetails", StadiumVM);
     }
 
-    public async Task<IActionResult> Select(int? sectionId) {
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddToCart(int? sectionId) {
         if (!sectionId.HasValue) {
             return NotFound();
         }
@@ -45,7 +47,7 @@ public class SeasonTicketsController(IService<Club> clubService, IService<Stadiu
 
         var shoppingCartVM = HttpContext.Session.GetObject<ShoppingCartVM>("ShoppingCart") ?? new ShoppingCartVM();
 
-        var existingItem = shoppingCartVM.Tickets.FirstOrDefault(x => x.ClubName == stadiumSection.HomeTeamNavigation.Name);
+        var existingItem = shoppingCartVM.SeasonTickets.FirstOrDefault(x => x.HomeClubName == stadiumSection.HomeTeamNavigation.Name);
 
         //Only 1 season ticket per team
         if (existingItem != null) {
@@ -53,13 +55,13 @@ public class SeasonTicketsController(IService<Club> clubService, IService<Stadiu
             return RedirectToAction(nameof(Index));
         }
 
-        shoppingCartVM.Tickets.Add(new SeasonTicketVM {
+        shoppingCartVM.SeasonTickets.Add(new SeasonTicketVM {
             SectionId = sectionId.Value,
-            ClubName = stadiumSection.HomeTeamNavigation.Name,
+            HomeClubName = stadiumSection.HomeTeamNavigation.Name,
             Ring = stadiumSection.Ring,
             Location = stadiumSection.Location,
             Price = 800.00,
-            DateCreated = DateTime.Now
+            DateCreated = DateOnly.FromDateTime(DateTime.Now)
         });
 
         HttpContext.Session.SetObject("ShoppingCart", shoppingCartVM);

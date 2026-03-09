@@ -1,0 +1,50 @@
+﻿@using ChampionsLeagueTickets.Domain.Entities;
+@using ChampionsLeagueTickets.ViewModels;
+@model StadiumVM;
+
+@{
+    ViewData["Title"] = "Day Tickets";
+}
+
+<h1>Tickets</h1>
+
+@if(TempData["Success"] != null) {
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if(TempData["Error"] != null) {
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<p>You are buying tickets for the match of @ViewBag.HomeClub against @ViewBag.AwayClub on @ViewBag.MatchDate</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Section</th>
+            <th>Price</th>
+            <th>Amount</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var item in Model.SectionVMs) {
+            <tr>
+                <form asp-action="AddToCart" method="post">
+                <td>@item.SectionName</td>
+                <td>0</td>
+                <td>
+                    <input type="hidden" name="matchId" value="@ViewBag.MatchId" />
+                    <input type="hidden" name="sectionId" value="@item.Id" />
+                    <input type="number" name="quantity" min="0" max="4" value="0" style="width: 70px;" />
+                </td>
+                <td>
+                    <button type="submit" class="btn btn-lg btn-primary">Add to Cart</button>
+                </td>
+                </form>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+
+

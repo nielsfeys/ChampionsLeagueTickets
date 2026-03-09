@@ -1,4 +1,5 @@
 ﻿using ChampionsLeagueTickets.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,9 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ChampionsLeagueTickets.Repositories.Interfaces;
-public interface IDAO<T> where T : class {
-    Task<IEnumerable<T>?> GetAllAsync();
-    Task<IEnumerable<T>?> GetAllByNameAsync(string name);
-    Task<T?> FindByIdAsync(int id);
+public interface IStadiumSectionDAO {
+    public Task<IEnumerable<StadiumSection>?> GetAllByClubNameAsync(string clubName);
+    public Task<StadiumSection?> FindByIdAsync(int id);
 }
 

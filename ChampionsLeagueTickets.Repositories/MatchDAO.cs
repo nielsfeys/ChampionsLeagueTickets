@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ChampionsLeagueTickets.Repositories;
-public class MatchDAO(ChampionsLeagueDbContext dbContext) : IDAO<Match> {
+public class MatchDAO(ChampionsLeagueDbContext dbContext) : IMatchDAO{
     private readonly ChampionsLeagueDbContext _dbContext = dbContext;
 
     public async Task<IEnumerable<Match>?> GetAllByNameAsync(string clubName) {
@@ -30,8 +30,12 @@ public class MatchDAO(ChampionsLeagueDbContext dbContext) : IDAO<Match> {
             .ToListAsync();
     }
 
-    public async Task<Match?> FindByIdAsync(int id) {
-        throw new NotImplementedException();
+    public async Task<Match?> GetByIdAsync(int id) {
+        return await _dbContext.Matches
+            .Include(m => m.HometeamNavigation)
+            .Include(m => m.AwayteamNavigation)
+            .Where(m => m.Id == id)
+            .FirstOrDefaultAsync();
     }
 
 }

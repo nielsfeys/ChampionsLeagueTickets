@@ -9,14 +9,16 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Section</th>
+                    <th>Ring</th>
+                    <th>Location</th>
                     <th>Seats</th>
                 </tr>
             </thead>
             <tbody>
             @foreach(var item in Model.SectionVMs) {
                 <tr>
-                    <td>@item.SectionName</td>
+                    <td>@item.Ring</td>
+                    <td>@item.Location</td>
                     <td>@item.Seats</td>
                 </tr>
             }

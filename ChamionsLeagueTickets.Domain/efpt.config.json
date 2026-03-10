@@ -5,7 +5,7 @@
    "FilterSchemas": false,
    "IncludeConnectionString": false,
    "IrregularWords": null,
-   "MinimumProductVersion": "2.6.1378",
+   "MinimumProductVersion": "2.6.1382",
    "ModelNamespace": null,
    "OutputContextPath": null,
    "OutputPath": "Entities",
@@ -19,6 +19,34 @@
    "T4TemplatePath": null,
    "Tables": [
       {
+         "Name": "[dbo].[AspNetRoleClaims]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AspNetRoles]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AspNetUserClaims]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AspNetUserLogins]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AspNetUserRoles]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AspNetUsers]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AspNetUserTokens]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[clubs]",
          "ObjectType": 0
       },
@@ -27,7 +55,19 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[orderlines]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[orders]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[stadiumsections]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tickets]",
          "ObjectType": 0
       }
    ],

@@ -17,9 +17,9 @@ public partial class StadiumSection
 
     public int Seats { get; set; }
 
-    public virtual Club HomeTeamNavigation { get; set; }
+    public decimal? Price { get; set; }
 
-    public virtual ICollection<SeasonTicket> Seasontickets { get; set; } = new List<SeasonTicket>();
+    public virtual Club HomeTeamNavigation { get; set; }
 
     public virtual ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 }

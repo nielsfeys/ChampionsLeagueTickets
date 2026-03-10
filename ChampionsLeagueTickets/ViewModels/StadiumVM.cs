@@ -9,7 +9,9 @@ public class StadiumVM {
 public class SectionVM {
     public int Id { get; set; }
     public string? HomeTeam { get; set; }
-    public string? SectionName { get; set; }
+    public string? Ring { get; set; }
+    public string? Location { get; set; }
+    public double Price { get; set; }
     public int Seats { get; set; }
 }
 

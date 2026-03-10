@@ -24,7 +24,7 @@
                 <td>@item.HomeClubName</td>
                 <td>@item.Ring</td>
                 <td>@item.Location</td>
-                <td>@item.Price</td>
+                <td>@($"€{item.Price:F2}")</td>
                 <td>Delete</td>
             </tr>
         }
@@ -58,7 +58,7 @@
                 <td>@item.AwayClubName</td>
                 <td>@item.Ring</td>
                 <td>@item.Location</td>
-                <td>@item.Price</td>
+                <td>@($"€{item.Price:F2}")</td>
                 <td>@item.Quantity</td>
                 <td>Delete</td>
             </tr>

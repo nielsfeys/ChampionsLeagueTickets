@@ -9,12 +9,14 @@ public abstract class TicketVM {
     public string? HomeClubName { get; set; }
     public string? Ring { get; set; }
     public string? Location { get; set; }
-    public double Price { get; set; }
+    public decimal? Price { get; set; }
     public DateOnly DateCreated { get; set; }
 }
 
 public class SeasonTicketVM : TicketVM{
     public static readonly DateOnly SeasonStart = DateOnly.FromDateTime(new(2026, 5, 15));
+    public static readonly int PriceMultiplier = 10;
+
 }
 
 public class DayTicketVM : TicketVM {

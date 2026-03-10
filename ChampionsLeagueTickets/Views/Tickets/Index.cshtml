@@ -19,7 +19,8 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Section</th>
+            <th>Ring</th>
+            <th>Location</th>
             <th>Price</th>
             <th>Amount</th>
             <th></th>
@@ -29,8 +30,9 @@
         @foreach(var item in Model.SectionVMs) {
             <tr>
                 <form asp-action="AddToCart" method="post">
-                <td>@item.SectionName</td>
-                <td>0</td>
+                <td>@item.Ring</td>
+                <td>@item.Location</td>
+                <td>@($"€{item.Price:F2}")</td>
                 <td>
                     <input type="hidden" name="matchId" value="@ViewBag.MatchId" />
                     <input type="hidden" name="sectionId" value="@item.Id" />

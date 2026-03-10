@@ -36,10 +36,12 @@ public class SeasonTicketsController(IClubService clubService, IStadiumSectionSe
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddToCart(int? sectionId) {
+        //Should never get triggered
         if (!sectionId.HasValue) {
             return NotFound();
         }
 
+        //Should never get triggered
         StadiumSection? stadiumSection = await _stadiumSectionService.FindByIdAsync(sectionId.Value);
         if (stadiumSection == null) {
             return NotFound();
@@ -60,7 +62,7 @@ public class SeasonTicketsController(IClubService clubService, IStadiumSectionSe
             HomeClubName = stadiumSection.HomeTeamNavigation.Name,
             Ring = stadiumSection.Ring,
             Location = stadiumSection.Location,
-            Price = 800.00,
+            Price = stadiumSection.Price * SeasonTicketVM.PriceMultiplier,
             DateCreated = DateOnly.FromDateTime(DateTime.Now)
         });
 

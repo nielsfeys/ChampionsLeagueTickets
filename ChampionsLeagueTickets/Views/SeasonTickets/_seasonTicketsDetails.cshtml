@@ -9,19 +9,28 @@ else {
     <table class="table">
         <thead>
             <tr>
-                <th>Section</th>
+                <th>Ring</th>
+                <th>Location</th>
+                <th>Price</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
             @foreach (var item in Model.SectionVMs) {
+                var isDisabled = SeasonTicketVM.SeasonStart < DateOnly.FromDateTime(DateTime.Today);
                 <tr>
-                    <td>@item.SectionName</td>
+                    <td>@item.Ring</td>
+                    <td>@item.Location</td>
+                    <td>@($"€{item.Price * SeasonTicketVM.PriceMultiplier:F2}")</td>
                     <td>
-                        <form method="post" asp-action="AddToCart" asp-controller="SeasonTickets" style="display: inline;">
+                        <form method="post" asp-action="AddToCart" asp-controller="SeasonTickets">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="sectionId" value="@item.Id" />
-                            <button type="submit" class="btn btn-primary">Add to shoppingcart</button>
+                            @if (isDisabled) {
+                                <button type="submit" class="btn btn-primary disabled">Add to Cart</button>
+                            } else {
+                                <button type="submit" class="btn btn-primary">Add to Cart</button>
+                            }
                         </form>
                     </td>
                 </tr>

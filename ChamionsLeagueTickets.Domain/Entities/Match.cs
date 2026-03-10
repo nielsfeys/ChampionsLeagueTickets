@@ -18,4 +18,6 @@ public partial class Match
     public virtual Club AwayteamNavigation { get; set; }
 
     public virtual Club HometeamNavigation { get; set; }
+
+    public virtual ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 }

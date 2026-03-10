@@ -2,8 +2,8 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
 using ChampionsLeagueTickets.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace ChampionsLeagueTickets.Domain.Data;
 
@@ -33,8 +33,6 @@ public partial class ChampionsLeagueDbContext : DbContext
     public virtual DbSet<Order> Orders { get; set; }
 
     public virtual DbSet<Orderline> Orderlines { get; set; }
-
-    public virtual DbSet<SeasonTicket> Seasontickets { get; set; }
 
     public virtual DbSet<StadiumSection> Stadiumsections { get; set; }
 
@@ -194,39 +192,6 @@ public partial class ChampionsLeagueDbContext : DbContext
                 .HasConstraintName("FK_OrderLine_Orders");
         });
 
-        modelBuilder.Entity<SeasonTicket>(entity =>
-        {
-            entity.ToTable("seasontickets");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("id");
-            entity.Property(e => e.ClubId).HasColumnName("clubId");
-            entity.Property(e => e.Price)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("price");
-            entity.Property(e => e.SectionId).HasColumnName("sectionId");
-            entity.Property(e => e.UserId)
-                .IsRequired()
-                .HasMaxLength(450)
-                .HasColumnName("userId");
-
-            entity.HasOne(d => d.Club).WithMany(p => p.Seasontickets)
-                .HasForeignKey(d => d.ClubId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_SeasonTickets_ClubId");
-
-            entity.HasOne(d => d.Section).WithMany(p => p.Seasontickets)
-                .HasForeignKey(d => d.SectionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_SeasonTickets_StadiumSections");
-
-            entity.HasOne(d => d.User).WithMany(p => p.Seasontickets)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_SeasonTickets_Users");
-        });
-
         modelBuilder.Entity<StadiumSection>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK_stadiumvakken_1");
@@ -240,6 +205,9 @@ public partial class ChampionsLeagueDbContext : DbContext
                 .HasMaxLength(4)
                 .IsFixedLength()
                 .HasColumnName("location");
+            entity.Property(e => e.Price)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("price");
             entity.Property(e => e.Ring)
                 .IsRequired()
                 .HasMaxLength(5)
@@ -260,14 +228,18 @@ public partial class ChampionsLeagueDbContext : DbContext
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
                 .HasColumnName("id");
+            entity.Property(e => e.MatchId).HasColumnName("matchId");
             entity.Property(e => e.Price)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("price");
             entity.Property(e => e.SectionId).HasColumnName("sectionId");
             entity.Property(e => e.Status)
-                .IsRequired()
                 .HasMaxLength(50)
                 .HasColumnName("status");
+
+            entity.HasOne(d => d.Match).WithMany(p => p.Tickets)
+                .HasForeignKey(d => d.MatchId)
+                .HasConstraintName("FK_Tickets_Matches");
 
             entity.HasOne(d => d.Section).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.SectionId)

@@ -24,7 +24,7 @@ else {
                     <td>@item.AwayTeam</td>
                     <td>
                         @if (isDisabled) {
-                            <a class="w-100 btn btn-lg btn-secondary disabled" asp-controller="Tickets" asp-action="Index" asp-route-matchId="@item.Id" disabled=@isDisabled>Buy Tickets</a>
+                            <a class="w-100 btn btn-lg btn-secondary disabled" asp-controller="Tickets" asp-action="Index" asp-route-matchId="@item.Id">Buy Tickets</a>
                         } else {
                             <a class="w-100 btn btn-lg btn-primary" asp-controller="Tickets" asp-action="Index" asp-route-matchId="@item.Id">Buy Tickets</a>
                         }

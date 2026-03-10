@@ -15,6 +15,10 @@ public partial class Ticket
 
     public string Status { get; set; }
 
+    public int? MatchId { get; set; }
+
+    public virtual Match Match { get; set; }
+
     public virtual Orderline Orderline { get; set; }
 
     public virtual StadiumSection Section { get; set; }

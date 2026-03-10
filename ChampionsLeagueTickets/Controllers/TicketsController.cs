@@ -44,10 +44,14 @@ public class TicketsController(IStadiumSectionService stadiumSectionService, IMa
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddToCart(int? matchId, int? sectionId, int? quantity) {
+        //Check all required arguments are properly filled
+        //Should never get triggered
         if (!matchId.HasValue || !sectionId.HasValue || !quantity.HasValue) {
             return NotFound();
         }
 
+        //Check the match and stadiumsection exist
+        //Should never get triggered
         Match? match = await _matchService.GetByIdAsync(matchId.Value);
         StadiumSection? stadiumSection = await _stadiumSectionService.FindByIdAsync(sectionId.Value);
         if (stadiumSection == null || match == null) {
@@ -55,7 +59,7 @@ public class TicketsController(IStadiumSectionService stadiumSectionService, IMa
         }
 
         if (quantity.Value <= 0) {
-            TempData["Error"] = "You need to add atleast 1 ticket.";
+            TempData["Error"] = "You need to add at least 1 ticket.";
             return RedirectToAction(nameof(Index), new { matchId = matchId.Value });
         }
 
@@ -78,12 +82,12 @@ public class TicketsController(IStadiumSectionService stadiumSectionService, IMa
                 HomeClubName = stadiumSection.HomeTeamNavigation.Name,
                 Ring = stadiumSection.Ring,
                 Location = stadiumSection.Location,
-                Price = 80.00,
                 DateCreated = DateOnly.FromDateTime(DateTime.Now),
                 Quantity = quantity.Value,
                 MatchId = matchId.Value,
                 AwayClubName = match.AwayteamNavigation.Name,
-                ValidDate = match.Date
+                ValidDate = match.Date,
+                Price = stadiumSection.Price
             });
         }
 

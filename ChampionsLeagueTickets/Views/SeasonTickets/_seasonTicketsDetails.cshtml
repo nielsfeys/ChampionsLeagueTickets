@@ -17,7 +17,7 @@ else {
         </thead>
         <tbody>
             @foreach (var item in Model.SectionVMs) {
-                var isDisabled = SeasonTicketVM.SeasonStart < DateOnly.FromDateTime(DateTime.Today);
+                var isDisabled = SeasonTicketVM.SeasonStart <= DateOnly.FromDateTime(DateTime.Today);
                 <tr>
                     <td>@item.Ring</td>
                     <td>@item.Location</td>

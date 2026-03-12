@@ -9,6 +9,7 @@ public partial class Ticket
 {
     public int Id { get; set; }
 
+    public string Code { get; set; }
     public int SectionId { get; set; }
 
     public decimal Price { get; set; }
@@ -17,9 +18,15 @@ public partial class Ticket
 
     public int? MatchId { get; set; }
 
+    public string Type { get; set; }
+
+    public string UserId { get; set; }
+
     public virtual Match Match { get; set; }
 
     public virtual Orderline Orderline { get; set; }
 
     public virtual StadiumSection Section { get; set; }
+
+    public virtual AspNetUser User { get; set; }
 }

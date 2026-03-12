@@ -6,63 +6,69 @@
 }
 
 <h1>Shopping Cart</h1>
-@if(Model.SeasonTickets.Count > 0) {
-    <h2>Season Tickets</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Club</th>
-                <th>Ring</th>
-                <th>Location</th>
-                <th>Price</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var item in Model.SeasonTickets) {
-            <tr>
-                <td>@item.HomeClubName</td>
-                <td>@item.Ring</td>
-                <td>@item.Location</td>
-                <td>@($"€{item.Price:F2}")</td>
-                <td>Delete</td>
-            </tr>
-        }
-        </tbody>
-    </table>
+<form method="post" asp-controller="ShoppingCart" asp-action="Checkout">
+    @Html.AntiForgeryToken()
+    @if(Model.SeasonTickets.Count > 0) {
+        <h2>Season Tickets</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Club</th>
+                    <th>Ring</th>
+                    <th>Location</th>
+                    <th>Price</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.SeasonTickets) {
+                <tr>
+                    <td>@item.HomeClubName</td>
+                    <td>@item.Ring</td>
+                    <td>@item.Location</td>
+                    <td>@($"€{item.Price:F2}")</td>
+                    <td>Delete</td>
+                </tr>
+            }
+            </tbody>
+        </table>
         
 
-}
-@if(Model.SeasonTickets.Count > 0 && Model.DayTickets.Count > 0) {
-    <hr />
-}
+    }
+    @if(Model.SeasonTickets.Count > 0 && Model.DayTickets.Count > 0) {
+        <hr />
+    }
 
-@if(Model.DayTickets.Count > 0) {
-    <h2>Single Match Tickets</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Home Team</th>
-                <th>Away Team</th>
-                <th>Ring</th>
-                <th>Location</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var item in Model.DayTickets) {
-            <tr>
-                <td>@item.HomeClubName</td>
-                <td>@item.AwayClubName</td>
-                <td>@item.Ring</td>
-                <td>@item.Location</td>
-                <td>@($"€{item.Price:F2}")</td>
-                <td>@item.Quantity</td>
-                <td>Delete</td>
-            </tr>
-        }
-        </tbody>
-    </table>
-}
+    @if(Model.DayTickets.Count > 0) {
+        <h2>Single Match Tickets</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Home Team</th>
+                    <th>Away Team</th>
+                    <th>Ring</th>
+                    <th>Location</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.DayTickets) {
+                <tr>
+                    <td>@item.HomeClubName</td>
+                    <td>@item.AwayClubName</td>
+                    <td>@item.Ring</td>
+                    <td>@item.Location</td>
+                    <td>@($"€{item.Price:F2}")</td>
+                    <td>@item.Quantity</td>
+                    <td>Delete</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+
+    <hr />
+    <button class="btn btn-primary" type="submit">Checkout</button>
+</form>

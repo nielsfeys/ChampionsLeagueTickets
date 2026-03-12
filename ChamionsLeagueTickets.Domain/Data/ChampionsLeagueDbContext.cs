@@ -215,7 +215,7 @@ public partial class ChampionsLeagueDbContext : DbContext
                 .HasColumnName("ring");
             entity.Property(e => e.Seats).HasColumnName("seats");
 
-            entity.HasOne(d => d.HomeTeamNavigation).WithMany(p => p.StadiumSections)
+            entity.HasOne(d => d.HomeTeamNavigation).WithMany(p => p.Stadiumsections)
                 .HasForeignKey(d => d.HomeTeam)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Stadiumvakken_Home_Team");
@@ -225,9 +225,7 @@ public partial class ChampionsLeagueDbContext : DbContext
         {
             entity.ToTable("tickets");
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("id");
+            entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.MatchId).HasColumnName("matchId");
             entity.Property(e => e.Price)
                 .HasColumnType("decimal(10, 2)")
@@ -236,6 +234,14 @@ public partial class ChampionsLeagueDbContext : DbContext
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
                 .HasColumnName("status");
+            entity.Property(e => e.Type)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnName("type");
+            entity.Property(e => e.UserId)
+                .IsRequired()
+                .HasMaxLength(450)
+                .HasColumnName("userId");
 
             entity.HasOne(d => d.Match).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.MatchId)
@@ -245,6 +251,11 @@ public partial class ChampionsLeagueDbContext : DbContext
                 .HasForeignKey(d => d.SectionId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Tickets_StadiumSections");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Tickets)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Tickets_AspNetUsers");
         });
 
         OnModelCreatingPartial(modelBuilder);

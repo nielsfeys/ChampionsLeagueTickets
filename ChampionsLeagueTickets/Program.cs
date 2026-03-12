@@ -1,13 +1,11 @@
 using ChampionsLeagueTickets.Data;
 using ChampionsLeagueTickets.Domain.Data;
-using ChampionsLeagueTickets.Domain.Entities;
 using ChampionsLeagueTickets.Models;
 using ChampionsLeagueTickets.Repositories;
 using ChampionsLeagueTickets.Repositories.Interfaces;
 using ChampionsLeagueTickets.Services;
 using ChampionsLeagueTickets.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,10 +27,12 @@ builder.Services.AddDbContext<ChampionsLeagueDbContext>(options =>
 builder.Services.AddScoped<IClubDAO, ClubDAO>();
 builder.Services.AddScoped<IMatchDAO, MatchDAO>();
 builder.Services.AddScoped<IStadiumSectionDAO, StadiumSectionDAO>();
+builder.Services.AddScoped<ITicketDAO, TicketDAO>();
 
 builder.Services.AddScoped<IClubService, ClubService>();
 builder.Services.AddScoped<IMatchService, MatchService>();
 builder.Services.AddScoped<IStadiumSectionService, StadiumSectionService>();
+builder.Services.AddScoped<ITicketService, TicketService>();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -51,7 +51,6 @@ builder.Services.AddSession(options => {
     options.IdleTimeout = TimeSpan.FromMinutes(1);
     }
 );
-
 
 var app = builder.Build();
 

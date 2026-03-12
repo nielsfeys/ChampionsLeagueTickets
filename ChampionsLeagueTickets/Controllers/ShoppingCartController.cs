@@ -25,7 +25,11 @@ namespace ChampionsLeagueTickets.Controllers {
         [ValidateAntiForgeryToken]
         [Authorize]
         public async Task<IActionResult> Checkout() {
-            List<Ticket> ticketList = MakeTicketList();
+            List<Ticket>? ticketList = await MakeTicketList();
+
+            if (ticketList == null) {
+                return RedirectToAction("Index");
+            }
 
             try {
                 await _ticketService.AddListAsync(ticketList);
@@ -35,16 +39,23 @@ namespace ChampionsLeagueTickets.Controllers {
             }
 
             await SendEmail(ticketList);
+
+            TempData["Succes"] = "Tickets succesfully added to your account. Thank you for your purchase!";
             
             HttpContext.Session.Remove("ShoppingCart");
             return RedirectToAction("Index");
         }
 
-        private List<Ticket> MakeTicketList() {
+        private async Task<List<Ticket>?> MakeTicketList() {
             ShoppingCartVM shoppingCart = HttpContext.Session.GetObject<ShoppingCartVM>("ShoppingCart") ?? new ShoppingCartVM();
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var options = new Action<IMappingOperationOptions>(opts => opts.Items["UserId"] = userId);
+
+            bool duplicateSeasonTickets = await CheckDuplicateSeasonTickets(shoppingCart.SeasonTickets);
+            if (duplicateSeasonTickets) {
+                return null;
+            }
 
             List<Ticket> ticketList = _mapper.Map<List<Ticket>>(shoppingCart.SeasonTickets, options);
             var dayTickets = new List<DayTicketVM>();
@@ -101,6 +112,35 @@ namespace ChampionsLeagueTickets.Controllers {
             using var qrCode = new PngByteQRCode(qrCodeData);
             return qrCode.GetGraphic(20);
         }
+
+        //Returns true if duplicates found
+        //Returns false if duplicates not found
+        private async Task<bool> CheckDuplicateSeasonTickets(List<SeasonTicketVM> seasonTicketVMs) {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null) {
+                return true;
+            }
+
+            List<Ticket>? seasonTickets = await _ticketService.GetOwnedSeasonTicketsAsync(userId);
+
+            if (seasonTickets == null) {
+                return false;
+            }
+
+            // For each seasonticket in the shopping cart, check that the user does not yet have one for this club
+            foreach (var cartTicket in seasonTicketVMs) {
+                foreach (var ownedTicket in seasonTickets) {
+                    var ownedHomeClub = ownedTicket.Section?.HomeTeamNavigation?.Name;
+                    if (!string.IsNullOrEmpty(ownedHomeClub) && ownedHomeClub == cartTicket.HomeClubName) {
+                        TempData["Error"] = $"You already have a season ticket for this club: {ownedHomeClub}. Please remove it from your cart.";
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
 
     }
 }

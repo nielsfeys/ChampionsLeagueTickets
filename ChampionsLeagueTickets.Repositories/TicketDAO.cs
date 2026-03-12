@@ -30,5 +30,13 @@ public class TicketDAO (ChampionsLeagueDbContext dbContext): ITicketDAO {
             throw;
         }
     }
+
+    public async Task<List<Ticket>?> GetOwnedSeasonTicketsAsync(string userId) {
+        return await _dbContext.Tickets
+            .Include(t => t.Section)
+            .ThenInclude(s => s.HomeTeamNavigation)
+            .Where(t => t.UserId == userId && t.Type == "Season")
+            .ToListAsync();
+    }
 }
 

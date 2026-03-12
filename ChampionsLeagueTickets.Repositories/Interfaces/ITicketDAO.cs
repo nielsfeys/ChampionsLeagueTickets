@@ -3,4 +3,6 @@
 namespace ChampionsLeagueTickets.Repositories.Interfaces;
 public interface ITicketDAO {
     public Task AddListAsync(List<Ticket> ticketList);
+    public Task<List<Ticket>?> GetOwnedSeasonTicketsAsync(string userId);
+
 }

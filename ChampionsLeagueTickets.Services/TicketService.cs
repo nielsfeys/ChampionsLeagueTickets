@@ -11,5 +11,8 @@ public class TicketService(ITicketDAO ticketDAO) : ITicketService {
         await _ticketDAO.AddListAsync(ticketList);
     }
 
+    public async Task<List<Ticket>?> GetOwnedSeasonTicketsAsync(string userId) {
+        return await _ticketDAO.GetOwnedSeasonTicketsAsync(userId);
+    }
 }
 

@@ -23,6 +23,6 @@ public class DayTicketVM : TicketVM {
     public int Quantity { get; set; }
     public int MatchId { get; set; }
     public string? AwayClubName { get; set; }
-    public DateOnly ValidDate { get; set; }
+    public DateOnly MatchDate { get; set; }
 }
 

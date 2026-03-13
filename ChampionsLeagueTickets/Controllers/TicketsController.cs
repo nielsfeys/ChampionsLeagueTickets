@@ -86,7 +86,7 @@ public class TicketsController(IStadiumSectionService stadiumSectionService, IMa
                 Quantity = quantity.Value,
                 MatchId = matchId.Value,
                 AwayClubName = match.AwayteamNavigation.Name,
-                ValidDate = match.Date,
+                MatchDate = match.Date,
                 Price = stadiumSection.Price
             });
         }

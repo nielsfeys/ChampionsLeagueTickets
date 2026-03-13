@@ -46,11 +46,45 @@ namespace ChampionsLeagueTickets.Controllers {
             return RedirectToAction("Index");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteSeasonTicket(int sectionId) {
+            var shoppingCart = HttpContext.Session.GetObject<ShoppingCartVM>("ShoppingCart") ?? new ShoppingCartVM();
+
+            var itemToRemove = shoppingCart.SeasonTickets.FirstOrDefault(t => t.SectionId == sectionId);
+            if (itemToRemove != null) {
+                shoppingCart.SeasonTickets.Remove(itemToRemove);
+                HttpContext.Session.SetObject("ShoppingCart", shoppingCart);
+                TempData["Success"] = "Season ticket removed from cart.";
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteDayTicket(int sectionId, int matchId) {
+            var shoppingCart = HttpContext.Session.GetObject<ShoppingCartVM>("ShoppingCart") ?? new ShoppingCartVM();
+
+            var itemToRemove = shoppingCart.DayTickets.FirstOrDefault(t => t.SectionId == sectionId && t.MatchId == matchId);
+            if (itemToRemove != null) {
+                shoppingCart.DayTickets.Remove(itemToRemove);
+                HttpContext.Session.SetObject("ShoppingCart", shoppingCart);
+                TempData["Success"] = "Ticket removed from cart.";
+            }
+
+            return RedirectToAction("Index");
+        }
+
         private async Task<List<Ticket>?> MakeTicketList() {
             ShoppingCartVM shoppingCart = HttpContext.Session.GetObject<ShoppingCartVM>("ShoppingCart") ?? new ShoppingCartVM();
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var options = new Action<IMappingOperationOptions>(opts => opts.Items["UserId"] = userId);
+
+            if (!await CheckTickets(shoppingCart)) {
+                return null;
+            }
 
             bool duplicateSeasonTickets = await CheckDuplicateSeasonTickets(shoppingCart.SeasonTickets);
             if (duplicateSeasonTickets) {
@@ -113,6 +147,35 @@ namespace ChampionsLeagueTickets.Controllers {
             return qrCode.GetGraphic(20);
         }
 
+        //Returns true if all checks passed and tickets can be bought
+        private async Task<bool> CheckTickets(ShoppingCartVM shoppingCart) {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null) {
+                return false;
+            }
+
+            if (await CheckDuplicateSeasonTickets(shoppingCart.SeasonTickets)) {
+                return false;
+            }
+
+            if (CheckSeasonTicketsBeforeSeasonStart(shoppingCart.SeasonTickets)) {
+                return false;
+            }
+
+            // Get user's existing day tickets
+            List<Ticket>? ownedDayTickets = await _ticketService.GetOwnedDayTicketsAsync(userId);
+
+            if (await CheckDayTicketsForMultipleMatchSameDay(shoppingCart.DayTickets, ownedDayTickets)) {
+                return false;
+            }
+
+            if (await CheckDayTicketsForQuantity(shoppingCart.DayTickets, ownedDayTickets)) {
+                return false;
+            }
+
+            return true;
+        }
+
         //Returns true if duplicates found
         //Returns false if duplicates not found
         private async Task<bool> CheckDuplicateSeasonTickets(List<SeasonTicketVM> seasonTicketVMs) {
@@ -141,6 +204,98 @@ namespace ChampionsLeagueTickets.Controllers {
             return false;
         }
 
+        //Returns true if season has already started and user is trying to buy seasontickets
+        //Returns false otherwise
+        private bool CheckSeasonTicketsBeforeSeasonStart(List<SeasonTicketVM> seasonTicketVMs) {
+            if (seasonTicketVMs.Count > 0 && SeasonTicketVM.SeasonStart <= DateOnly.FromDateTime(DateTime.Today)) {
+                TempData["Error"] = "You can only buy season tickets before the start of the season. Please remove any season tickets from your cart.";
+                return true;   
+            }
 
+            return false;
+        }
+
+        //Returns true if user tries to buy tickets for multiple different matches on the same day
+        //Returns false otherwise
+        private async Task<bool> CheckDayTicketsForMultipleMatchSameDay(List<DayTicketVM> dayTicketVMs, List<Ticket> ownedDayTickets) {
+            if (dayTicketVMs.Count == 0) {
+                return false;
+            }
+            
+            // Group cart tickets by date and match
+            var cartTicketsByDate = dayTicketVMs
+                .GroupBy(t => new { t.MatchDate, t.MatchId })
+                .ToList();
+
+            // Check for conflicts within the cart itself
+            var datesInCart = cartTicketsByDate
+                .GroupBy(g => g.Key.MatchDate)
+                .Where(g => g.Count() > 1)
+                .ToList();
+
+            if (datesInCart.Any()) {
+                var conflictDate = datesInCart.First().Key;
+                TempData["Error"] = $"You cannot buy tickets for different matches on the same day {conflictDate}. Please remove one from your cart.";
+                return true;
+            }
+
+            // Check cart tickets against owned tickets
+            if (ownedDayTickets != null && ownedDayTickets.Count > 0) {
+                foreach (var cartTicket in dayTicketVMs) {
+                    foreach (var ownedTicket in ownedDayTickets) {
+                        var ownedMatchDate = ownedTicket.Match?.Date;
+                        var ownedMatchId = ownedTicket.MatchId;
+                        
+                        if (ownedMatchDate.HasValue && 
+                            ownedMatchDate.Value == cartTicket.MatchDate && 
+                            ownedMatchId != cartTicket.MatchId) {
+                            TempData["Error"] = $"You already have a ticket for a different match on {cartTicket.MatchDate}. You cannot buy tickets for multiple matches on the same day.";
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private async Task<bool> CheckDayTicketsForQuantity(List<DayTicketVM> dayTicketVMs, List<Ticket> ownedDayTickets) {
+            const int MAX_TICKETS = 4;
+    
+            if (dayTicketVMs.Count == 0) {
+                return false;
+            }
+
+            // Group cart tickets by match and sum quantities
+            var cartTicketsByMatch = dayTicketVMs
+                .GroupBy(t => t.MatchId)
+                .Select(g => new { 
+                    MatchId = g.Key, 
+                    Quantity = g.Sum(t => t.Quantity),
+                    MatchInfo = g.First()
+                })
+                .ToList();
+
+            foreach (var cartGroup in cartTicketsByMatch) {
+                int totalQuantity = cartGroup.Quantity;
+    
+                // Add owned tickets for this match
+                if (ownedDayTickets != null) {
+                    int ownedCount = ownedDayTickets.Count(t => t.MatchId == cartGroup.MatchId);
+                    totalQuantity += ownedCount;
+                }
+    
+                if (totalQuantity > MAX_TICKETS) {
+                    int ownedCount = ownedDayTickets?.Count(t => t.MatchId == cartGroup.MatchId) ?? 0;
+                    int availableTickets = MAX_TICKETS - ownedCount;
+                    
+                    TempData["Error"] = $"You cannot buy more than {MAX_TICKETS} tickets for the match on {cartGroup.MatchInfo.MatchDate}. You already own {ownedCount} ticket(s) for this match, so you can only buy {availableTickets} more." +
+                        $"Please remove some tickets for this date.";
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

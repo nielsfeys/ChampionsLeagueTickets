@@ -1,6 +1,7 @@
 ﻿using ChampionsLeagueTickets.Domain.Entities;
 using ChampionsLeagueTickets.Repositories.Interfaces;
 using ChampionsLeagueTickets.Services.Interfaces;
+using Org.BouncyCastle.Asn1.IsisMtt.X509;
 
 
 namespace ChampionsLeagueTickets.Services;
@@ -13,6 +14,10 @@ public class TicketService(ITicketDAO ticketDAO) : ITicketService {
 
     public async Task<List<Ticket>?> GetOwnedSeasonTicketsAsync(string userId) {
         return await _ticketDAO.GetOwnedSeasonTicketsAsync(userId);
+    }
+
+    public async Task<List<Ticket>?> GetOwnedDayTicketsAsync(string userId) {
+        return await _ticketDAO.GetOwnedDayTicketsAsync(userId);
     }
 }
 

@@ -10,5 +10,6 @@ namespace ChampionsLeagueTickets.Repositories.Interfaces;
 public interface IStadiumSectionDAO {
     public Task<IEnumerable<StadiumSection>?> GetAllByClubNameAsync(string clubName);
     public Task<StadiumSection?> FindByIdAsync(int id);
+    public Task<List<StadiumSection>> FindByIdsAsync(List<int> sectionIds);
 }
 

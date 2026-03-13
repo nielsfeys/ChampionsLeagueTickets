@@ -19,5 +19,13 @@ public class TicketService(ITicketDAO ticketDAO) : ITicketService {
     public async Task<List<Ticket>?> GetOwnedDayTicketsAsync(string userId) {
         return await _ticketDAO.GetOwnedDayTicketsAsync(userId);
     }
+
+    public async Task<Dictionary<int, int>> GetSeasonTicketCountsBySectionsAsync(List<int> sectionIds) {
+        return await _ticketDAO.GetSeasonTicketCountsBySectionsAsync(sectionIds);
+    }
+
+    public async Task<Dictionary<(int MatchId, int SectionId), int>> GetDayTicketCountsByMatchAndSectionsAsync(List<(int MatchId, int SectionId)> matchSectionPairs) {
+        return await _ticketDAO.GetDayTicketCountsByMatchAndSectionsAsync(matchSectionPairs);
+    }
 }
 

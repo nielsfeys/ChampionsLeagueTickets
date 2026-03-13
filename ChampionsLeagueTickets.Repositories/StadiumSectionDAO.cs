@@ -21,5 +21,10 @@ public class StadiumSectionDAO(ChampionsLeagueDbContext dbContext) : IStadiumSec
             .FirstOrDefaultAsync();
     }
 
+    public async Task<List<StadiumSection>> FindByIdsAsync(List<int> sectionIds) {
+        return await _dbContext.Stadiumsections
+            .Where(s => sectionIds.Contains(s.Id))
+            .ToListAsync();
+    }
 }
 

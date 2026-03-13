@@ -18,5 +18,9 @@ public class StadiumSectionService(IStadiumSectionDAO stadiumSectionDAO) : IStad
         return await _stadiumSectionDAO.FindByIdAsync(id); 
     }
 
+    public async Task<List<StadiumSection>> FindByIdsAsync(List<int> sectionIds)
+    {
+        return await _stadiumSectionDAO.FindByIdsAsync(sectionIds);
+    }
 }
 

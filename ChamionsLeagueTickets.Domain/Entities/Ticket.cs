@@ -12,6 +12,8 @@ public partial class Ticket
     public string Code { get; set; }
     public int SectionId { get; set; }
 
+    public int Seat { get; set; }
+
     public decimal Price { get; set; }
 
     public string Status { get; set; }

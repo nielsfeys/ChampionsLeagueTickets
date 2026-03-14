@@ -83,6 +83,36 @@ public class TicketDAO (ChampionsLeagueDbContext dbContext): ITicketDAO {
             x => (x.MatchId, x.SectionId),
             x => x.Count
         );
+
+
+    }
+
+    public async Task<List<Ticket>> GetAllByUserIdAsync(string userId) {
+        return await _dbContext.Tickets
+            .Include(t => t.Match)
+                .ThenInclude(m => m.HometeamNavigation)
+            .Include(t => t.Match)
+                .ThenInclude(m => m.AwayteamNavigation)
+            .Include(t => t.Section)
+                .ThenInclude(m => m.HomeTeamNavigation)
+            .Where(t => t.UserId == userId)
+            .OrderByDescending(t => t.Type)
+            .ThenBy(t => t.Match.Date)
+            .ToListAsync();
+    }
+
+    public async Task<bool> CancelTicketAsync(int ticketId, string userId) {
+        var ticket = await _dbContext.Tickets.FindAsync(ticketId);
+        
+        if (ticket == null || ticket.UserId != userId || ticket.Match.Date < DateOnly.FromDateTime(DateTime.Today.AddDays(7))) {
+            return false;
+        }
+
+
+        ticket.Status = "Cancelled";
+        await _dbContext.SaveChangesAsync();
+        
+        return true;
     }
 }
 

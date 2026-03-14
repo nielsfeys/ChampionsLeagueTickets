@@ -1,0 +1,95 @@
+﻿@using ChampionsLeagueTickets.ViewModels;
+@model HistoryVM;
+
+@{
+    ViewData["Title"] = "My Tickets";
+}
+
+<h1>My tickets</h1>
+
+@if (Model.Tickets.Count > 0) {
+    var dayTicketsStart = 0;
+    if (Model.Tickets.Any( t => t.Type == "Season"))
+    {
+        <h2>Season Tickets</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Club</th>
+                    <th>Ring</th>
+                    <th>Location</th>
+                    <th>Seat</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.Tickets.Count; i++) {
+                    var item = Model.Tickets[i];
+                    if (item.Type == "Season") {
+                        <tr>
+                            <td>@item.Section.HomeTeamNavigation.Name</td>
+                            <td>@item.Section.Ring</td>
+                            <td>@item.Section.Location</td>
+                            <td>@item.Seat</td>
+                        </tr>
+                    } else
+                    {
+                        dayTicketsStart = i;
+                        break;
+                    }
+
+                }
+            </tbody>
+        </table>
+    }
+    if (Model.Tickets.Any( t => t.Type == "Day"))
+    {
+        <h2>Day Tickets</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Home Team</th>
+                    <th>Away Team</th>
+                    <th>Ring</th>
+                    <th>Location</th>
+                    <th>Seat</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = dayTicketsStart; i < Model.Tickets.Count; i++) {
+                    var item = Model.Tickets[i];
+                    if (item.Type == "Day") {
+                        <tr>
+                            <td>@item.Match.Date</td>
+                            <td>@item.Match.HometeamNavigation.Name</td>
+                            <td>@item.Match.AwayteamNavigation.Name</td>
+                            <td>@item.Section.Ring</td>
+                            <td>@item.Section.Location</td>
+                            <td>@item.Seat</td>
+                            <td>
+                                <form method="post" asp-controller="History" asp-action="Cancel">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="ticketId" value=@item.Id/>
+                                    @if (item.Match.Date < DateOnly.FromDateTime(DateTime.Today.AddDays(7)))
+                                        {
+                                            <button class="btn btn-sm disabled">Cancel</button>
+                                        } else
+                                        {
+                                        <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                                        }     
+                                </form>
+                            </td>
+                        </tr>
+                    }
+
+                }
+            </tbody>
+        </table>
+    }
+
+    
+        
+} else {
+    <div class="alert alert-danger">You don't own any tickets yet.</div>
+}

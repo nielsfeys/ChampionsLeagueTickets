@@ -13,7 +13,7 @@ public partial class Orderline
 
     public int TicketId { get; set; }
 
-    public virtual Ticket IdNavigation { get; set; }
+    public virtual Ticket Ticket { get; set; }
 
     public virtual Order Order { get; set; }
 }

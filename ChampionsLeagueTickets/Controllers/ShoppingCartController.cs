@@ -1,21 +1,23 @@
 ﻿using AutoMapper;
 using ChampionsLeagueTickets.Domain.Entities;
 using ChampionsLeagueTickets.Extensions;
+using ChampionsLeagueTickets.Services;
 using ChampionsLeagueTickets.Services.Interfaces;
 using ChampionsLeagueTickets.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QRCoder;
 using System.Security.Claims;
 using System.Text;
-using QRCoder;
 
 
 namespace ChampionsLeagueTickets.Controllers {
-    public class ShoppingCartController(ITicketService ticketService, IStadiumSectionService stadiumSectionService, IMapper mapper, IEmailSender emailSender) : Controller {
+    public class ShoppingCartController(ITicketService ticketService, IStadiumSectionService stadiumSectionService, IMapper mapper, IEmailSender emailSender, IOrderService orderService) : Controller {
         private readonly ITicketService _ticketService = ticketService;
         private readonly IStadiumSectionService _stadiumSectionService = stadiumSectionService;
         private readonly IMapper _mapper = mapper;
         private readonly IEmailSender _emailSender = emailSender;
+        private readonly IOrderService _orderService = orderService;
 
         public IActionResult Index() {
             var shoppingCartVM = HttpContext.Session.GetObject<ShoppingCartVM>("ShoppingCart") ?? new ShoppingCartVM();
@@ -32,8 +34,16 @@ namespace ChampionsLeagueTickets.Controllers {
                 return RedirectToAction("Index");
             }
 
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId)) {
+                TempData["Error"] = "User not found.";
+                return RedirectToAction("Index");
+            }
+
             try {
                 await _ticketService.AddListAsync(ticketList);
+
+                await _orderService.CreateOrderWithOrderlinesAsync(userId, ticketList);
             } catch(Exception) {
                 TempData["Error"] = "An error occurred while processing your order. Please try again.";
                 return RedirectToAction("Index");
@@ -41,7 +51,7 @@ namespace ChampionsLeagueTickets.Controllers {
 
             await SendEmail(ticketList);
 
-            TempData["Succes"] = "Tickets succesfully added to your account. Thank you for your purchase!";
+            TempData["Success"] = "Tickets succesfully added to your account. Thank you for your purchase!";
             
             HttpContext.Session.Remove("ShoppingCart");
             return RedirectToAction("Index");
@@ -77,11 +87,29 @@ namespace ChampionsLeagueTickets.Controllers {
             return RedirectToAction("Index");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult UpdateDayTicketQuantity(int sectionId, int matchId, int quantity) {
+            if (quantity < 1 || quantity > 4) {
+                TempData["Error"] = "Quantity must be between 1 and 4.";
+                return RedirectToAction("Index");
+            }
+
+            var shoppingCart = HttpContext.Session.GetObject<ShoppingCartVM>("ShoppingCart") ?? new ShoppingCartVM();
+            
+            var itemToUpdate = shoppingCart.DayTickets.FirstOrDefault(t => t.SectionId == sectionId && t.MatchId == matchId);
+            if (itemToUpdate != null) {
+                itemToUpdate.Quantity = quantity;
+                HttpContext.Session.SetObject("ShoppingCart", shoppingCart);
+            }
+
+            return RedirectToAction("Index");
+        }
+
         private async Task<List<Ticket>?> MakeTicketList() {
             ShoppingCartVM shoppingCart = HttpContext.Session.GetObject<ShoppingCartVM>("ShoppingCart") ?? new ShoppingCartVM();
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var options = new Action<IMappingOperationOptions>(opts => opts.Items["UserId"] = userId);
 
             if (!await CheckTickets(shoppingCart)) {
                 return null;
@@ -92,14 +120,65 @@ namespace ChampionsLeagueTickets.Controllers {
                 return null;
             }
 
-            List<Ticket> ticketList = _mapper.Map<List<Ticket>>(shoppingCart.SeasonTickets, options);
-            var dayTickets = new List<DayTicketVM>();
-            foreach (var dayTicket in shoppingCart.DayTickets) {
-                for (int i = 0; i < dayTicket.Quantity; i++) {
-                    dayTickets.Add(dayTicket);
+            List<Ticket> ticketList = new List<Ticket>();
+
+            // Map Season Tickets
+            if (shoppingCart.SeasonTickets.Count > 0) {
+                // Get all unique section IDs from season tickets
+                var seasonSectionIds = shoppingCart.SeasonTickets.Select(t => t.SectionId).Distinct().ToList();
+                
+                // Fetch sections and season ticket counts
+                var sections = await _stadiumSectionService.FindByIdsAsync(seasonSectionIds);
+                var sectionLookup = sections.ToDictionary(s => s.Id);
+                var seasonTicketCounts = await _ticketService.GetSeasonTicketCountsBySectionsAsync(seasonSectionIds);
+
+                // Map each season ticket with appropriate context
+                foreach (var seasonTicketVM in shoppingCart.SeasonTickets) {
+                    if (!sectionLookup.TryGetValue(seasonTicketVM.SectionId, out var section)) {
+                        continue;
+                    }
+
+                    int seasonTicketsSold = seasonTicketCounts.TryGetValue(seasonTicketVM.SectionId, out var count) ? count : 0;
+
+                    var options = new Action<IMappingOperationOptions>(opts => {
+                        opts.Items["UserId"] = userId;
+                        opts.Items["TotalSeats"] = section.Seats;
+                        opts.Items["SeasonTicketsSold"] = seasonTicketsSold;
+                    });
+
+                    var ticket = _mapper.Map<Ticket>(seasonTicketVM, options);
+                    ticketList.Add(ticket);
                 }
             }
-            ticketList.AddRange(_mapper.Map<List<Ticket>>(dayTickets, options));
+
+            // Map Day Tickets
+            if (shoppingCart.DayTickets.Count > 0) {
+                // Get all unique match/section combinations
+                var matchSectionPairs = shoppingCart.DayTickets
+                    .Select(t => (t.MatchId, t.SectionId))
+                    .Distinct()
+                    .ToList();
+                
+                // Fetch day ticket counts for all combinations
+                var dayTicketCounts = await _ticketService.GetDayTicketCountsByMatchAndSectionsAsync(matchSectionPairs);
+
+                // Expand day tickets by quantity and map each one
+                foreach (var dayTicketVM in shoppingCart.DayTickets) {
+                    var key = (dayTicketVM.MatchId, dayTicketVM.SectionId);
+                    int existingDayTickets = dayTicketCounts.TryGetValue(key, out var count) ? count : 0;
+
+                    for (int i = 0; i < dayTicketVM.Quantity; i++) {
+                        var options = new Action<IMappingOperationOptions>(opts => {
+                            opts.Items["UserId"] = userId;
+                            // Each ticket gets the next available seat number
+                            opts.Items["DayTicketsSold"] = existingDayTickets + i;
+                        });
+
+                        var ticket = _mapper.Map<Ticket>(dayTicketVM, options);
+                        ticketList.Add(ticket);
+                    }
+                }
+            }
 
             return ticketList;
         }
@@ -124,13 +203,14 @@ namespace ChampionsLeagueTickets.Controllers {
                 var homeClub = ticket.Match?.HometeamNavigation?.Name ?? "Unknown";
                 var ring = ticket.Section?.Ring ?? "Unknown";
                 var location = ticket.Section?.Location ?? "Unknown";
+                var seat = ticket.Seat;
                 if (ticket.Type == "Season") {
                     
-                    fileName = $"SeasonTicket_{homeClub}_{ring}_{location}.png";
+                    fileName = $"SeasonTicket_{homeClub}_{ring}_{location}_{seat}.png";
                 } else {
                     var awayClub = ticket.Match?.AwayteamNavigation?.Name ?? "Unknown";
                     var date = ticket.Match?.Date.ToString("yyyy-MM-dd") ?? "Unknown";
-                    fileName = $"Ticket_{homeClub}_{awayClub}_{date}_{ring}_{location}.png";
+                    fileName = $"Ticket_{homeClub}_{awayClub}_{date}_{ring}_{location}_{seat}.png";
                 }
 
                 attachments.Add((qrCodeBytes, fileName, "image/png"));
@@ -273,6 +353,8 @@ namespace ChampionsLeagueTickets.Controllers {
             return false;
         }
 
+        //Returns true if user tries to buy too many tickets for the same match
+        //Returns false otherwise
         private async Task<bool> CheckDayTicketsForQuantity(List<DayTicketVM> dayTicketVMs, List<Ticket> ownedDayTickets) {
             const int MAX_TICKETS = 4;
     

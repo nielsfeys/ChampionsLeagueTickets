@@ -28,11 +28,13 @@ builder.Services.AddScoped<IClubDAO, ClubDAO>();
 builder.Services.AddScoped<IMatchDAO, MatchDAO>();
 builder.Services.AddScoped<IStadiumSectionDAO, StadiumSectionDAO>();
 builder.Services.AddScoped<ITicketDAO, TicketDAO>();
+builder.Services.AddScoped<IOrderDAO, OrderDAO>();
 
 builder.Services.AddScoped<IClubService, ClubService>();
 builder.Services.AddScoped<IMatchService, MatchService>();
 builder.Services.AddScoped<IStadiumSectionService, StadiumSectionService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -42,6 +44,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 // Register Email Service
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender, EmailSender>();
 
 builder.Services.AddControllersWithViews();
 

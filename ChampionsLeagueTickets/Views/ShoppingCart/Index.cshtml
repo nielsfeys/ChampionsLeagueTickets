@@ -35,7 +35,8 @@
                 <td>@item.Ring</td>
                 <td>@item.Location</td>
                 <td>@($"€{item.Price:F2}")</td>
-                <td><form method="post" asp-controller="ShoppingCart" asp-action="DeleteSeasonTicket" style="display:inline;">
+                <td>
+                    <form method="post" asp-controller="ShoppingCart" asp-action="DeleteSeasonTicket">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="sectionId" value="@item.SectionId" />
                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
@@ -75,8 +76,20 @@
                 <td>@item.Ring</td>
                 <td>@item.Location</td>
                 <td>@($"€{item.Price:F2}")</td>
-                <td>@item.Quantity</td>
-                <td><form method="post" asp-controller="ShoppingCart" asp-action="DeleteDayTicket" style="display:inline;">
+                <td>
+                    <form method="post" asp-controller="ShoppingCart" asp-action="UpdateDayTicketQuantity">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="sectionId" value="@item.SectionId" />
+                        <input type="hidden" name="matchId" value="@item.MatchId" />
+                        <input type="number" 
+                               name="quantity" 
+                               value="@item.Quantity" 
+                               min="1" 
+                               max="4"
+                               onchange="this.form.submit()"/>
+                    </form>
+                </td>
+                <td><form method="post" asp-controller="ShoppingCart" asp-action="DeleteDayTicket">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="sectionId" value="@item.SectionId" />
                         <input type="hidden" name="matchId" value="@item.MatchId" />
@@ -87,8 +100,16 @@
         </tbody>
     </table>
 }
-<form method="post" asp-controller="ShoppingCart" asp-action="Checkout">
-    @Html.AntiForgeryToken()
-    <hr />
-    <button class="btn btn-primary" type="submit">Checkout</button>
-</form>
+
+@if(Model.SeasonTickets.Count > 0 || Model.DayTickets.Count > 0) {
+    <div>
+        <hr />
+        <div class="d-flex justify-content-end align-items-center gap-3">
+            <p class="mb-0"><strong>Total price: €@Model.TotalPrice</strong></p>
+            <form method="post" asp-controller="ShoppingCart" asp-action="Checkout" class="mb-0">
+                @Html.AntiForgeryToken()
+                <button class="btn btn-primary" type="submit">Checkout</button>
+            </form>
+        </div>
+    </div>
+}

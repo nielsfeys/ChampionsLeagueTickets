@@ -22,6 +22,7 @@ public class MatchDAO(ChampionsLeagueDbContext dbContext) : IMatchDAO{
         return await _dbContext.Matches
             .Include(m => m.HometeamNavigation)
             .Include(m => m.AwayteamNavigation)
+            .OrderBy(m => m.Date)
             .ToListAsync();
     }
 

@@ -2,6 +2,10 @@
 public class ShoppingCartVM {
     public List<SeasonTicketVM> SeasonTickets { get; set; } = [];
     public List<DayTicketVM> DayTickets { get; set; } = [];
+
+    public decimal TotalPrice => 
+        SeasonTickets.Sum(st => st.Price ?? 0) +
+        DayTickets.Sum(dt => (dt.Price ?? 0) * dt.Quantity);
 }
 
 public abstract class TicketVM {

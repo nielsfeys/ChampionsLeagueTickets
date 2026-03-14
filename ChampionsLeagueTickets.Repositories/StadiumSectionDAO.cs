@@ -11,6 +11,7 @@ public class StadiumSectionDAO(ChampionsLeagueDbContext dbContext) : IStadiumSec
         return await _dbContext.Stadiumsections
             .Include(s => s.HomeTeamNavigation)
             .Where(s => s.HomeTeamNavigation.Name == clubName)
+            .OrderByDescending(s => s.Price)
             .ToListAsync();
     }
 

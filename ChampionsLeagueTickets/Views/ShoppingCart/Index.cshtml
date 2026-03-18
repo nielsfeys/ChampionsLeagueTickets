@@ -16,6 +16,13 @@
 }
 
 
+@if (Model.SeasonTickets.Count == 0 && Model.DayTickets.Count == 0) {
+    <p>Uh-Oh! There seems to be nothing here!</p> 
+    <p>Season tickets can be bought from the "Season Tickets" menu option.</p>
+    <p>Normal tickets can be bought buy searching for your desired match in the "Calendar" menu option.</p>
+
+}
+
 @if(Model.SeasonTickets.Count > 0) {
     <h2>Season Tickets</h2>
     <table class="table">

@@ -12,8 +12,8 @@ public class CalendarController(IClubService clubService, IMatchService matchSer
     private readonly IMapper _mapper = mapper;
 
     public async Task<IActionResult> Index() {
-        ViewBag.Clubs = await _clubService.GetAllAsync();
-        var Matches = await _matchService.GetAllAsync();
+        ViewBag.Clubs = await _clubService.GetAllSellableAsync();
+        var Matches = await _matchService.GetAllFutureAsync();
         var MatchVMs = MatchToMatchVM(Matches);
         return View(MatchVMs);
     }
@@ -21,9 +21,9 @@ public class CalendarController(IClubService clubService, IMatchService matchSer
     public async Task<IActionResult> IndexWithFilter(string clubName) {
         IEnumerable<Match>? Matches;
         if (clubName == "All") {
-            Matches = await _matchService.GetAllAsync();
+            Matches = await _matchService.GetAllFutureAsync();
         } else {
-            Matches = await _matchService.GetAllByNameAsync(clubName);
+            Matches = await _matchService.GetAllFutureByNameAsync(clubName);
         }
 
         var MatchVMs = MatchToMatchVM(Matches);

@@ -11,6 +11,10 @@ public partial class Club
 
     public string Name { get; set; }
 
+    public bool Sellable { get; set; }
+
+    public string City { get; set; }
+
     public virtual ICollection<Match> MatchAwayteamNavigations { get; set; } = new List<Match>();
 
     public virtual ICollection<Match> MatchHometeamNavigations { get; set; } = new List<Match>();

@@ -1,11 +1,12 @@
-﻿@{
-    ViewData["Title"] = "Champions League Tickets - Home Page";
+﻿@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Title"];
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>This is a website made for the course "Full Stack Development" at Vives Kortrijk for the year 2026.</p>
-    <p>This website is made by Niels Feys.</p>
-    <p>Please use the navigation menu to check match schedules, check stadium capacity and buy season tickets.</p>
-    <p>For normal tickets, please use the calendar to search for your desired match.</p>
+    <h1 class="display-4">@Localizer["Welcome"]</h1>
+    <p>@Localizer["Description"]</p>
+    <p>@Localizer["MadeBy"]</p>
+    <p>@Localizer["NavigationInstructions"]</p>
+    <p>@Localizer["TicketInstructions"]</p>
 </div>

@@ -7,21 +7,23 @@ namespace ChampionsLeagueTickets.Repositories;
 public class MatchDAO(ChampionsLeagueDbContext dbContext) : IMatchDAO{
     private readonly ChampionsLeagueDbContext _dbContext = dbContext;
 
-    public async Task<IEnumerable<Match>?> GetAllByNameAsync(string clubName) {
+    public async Task<IEnumerable<Match>?> GetAllFutureByNameAsync(string clubName) {
         return  await _dbContext.Matches
             .Include(m => m.HometeamNavigation)
             .Include(m => m.AwayteamNavigation)
             .Where(m =>
-                m.HometeamNavigation.Name == clubName ||
-                m.AwayteamNavigation.Name == clubName)
+                m.Date > DateOnly.FromDateTime(DateTime.Today) &&
+                (m.HometeamNavigation.Name == clubName ||
+                m.AwayteamNavigation.Name == clubName))
             .OrderBy(m => m.Date)
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Match>?> GetAllAsync() {
+    public async Task<IEnumerable<Match>?> GetAllFutureAsync() {
         return await _dbContext.Matches
             .Include(m => m.HometeamNavigation)
             .Include(m => m.AwayteamNavigation)
+            .Where(m => m.Date > DateOnly.FromDateTime(DateTime.Today))
             .OrderBy(m => m.Date)
             .ToListAsync();
     }

@@ -14,7 +14,7 @@ public class SeasonTicketsController(IClubService clubService, IStadiumSectionSe
     private readonly IMapper _mapper = mapper;
 
     public async Task<IActionResult> Index() {
-        ViewBag.Clubs = await _clubService.GetAllAsync();
+        ViewBag.Clubs = await _clubService.GetAllSellableAsync();
         return View();
     }
 

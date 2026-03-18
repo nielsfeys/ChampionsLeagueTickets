@@ -1,6 +1,8 @@
 using ChampionsLeagueTickets.Models;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace ChampionsLeagueTickets.Controllers {
     public class HomeController : Controller {
@@ -17,6 +19,16 @@ namespace ChampionsLeagueTickets.Controllers {
         public IActionResult Privacy() {
             return View();
         }
+
+        public IActionResult SetLanguage(string language, string returnUrl) {
+            Response.Cookies.Append(
+                CookieRequestCultureProvider.DefaultCookieName,
+                CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(language))
+            );
+
+            return LocalRedirect(returnUrl);
+        }
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error() {

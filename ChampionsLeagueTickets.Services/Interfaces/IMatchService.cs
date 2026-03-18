@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace ChampionsLeagueTickets.Services.Interfaces;
 public interface IMatchService {
-    public Task<IEnumerable<Match>?> GetAllAsync();
-    public Task<IEnumerable<Match>?> GetAllByNameAsync(string clubName);
+    public Task<IEnumerable<Match>?> GetAllFutureAsync();
+    public Task<IEnumerable<Match>?> GetAllFutureByNameAsync(string clubName);
     public Task<Match?> GetByIdAsync(int id);
 }
 

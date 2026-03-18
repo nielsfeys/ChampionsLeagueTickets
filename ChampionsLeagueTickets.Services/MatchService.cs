@@ -14,12 +14,12 @@ public class MatchService : IMatchService {
         _matchDAO = matchDAO;
     }
 
-    public async Task<IEnumerable<Match>?> GetAllAsync() {
-        return await _matchDAO.GetAllAsync();
+    public async Task<IEnumerable<Match>?> GetAllFutureAsync() {
+        return await _matchDAO.GetAllFutureAsync();
     }
 
-    public async Task<IEnumerable<Match>?> GetAllByNameAsync(string clubName) {
-        return await _matchDAO.GetAllByNameAsync(clubName);
+    public async Task<IEnumerable<Match>?> GetAllFutureByNameAsync(string clubName) {
+        return await _matchDAO.GetAllFutureByNameAsync(clubName);
     }
 
     public async Task<Match?> GetByIdAsync(int id) {

@@ -7,7 +7,9 @@ namespace ChampionsLeagueTickets.Repositories;
 public class ClubDAO(ChampionsLeagueDbContext dbContext) : IClubDAO {
     private readonly ChampionsLeagueDbContext _dbContext = dbContext;
 
-    public async Task<IEnumerable<Club>?> GetAllAsync() {
-        return await _dbContext.Clubs.ToListAsync();
+    public async Task<IEnumerable<Club>?> GetAllSellableAsync() {
+        return await _dbContext.Clubs
+            .Where(c => c.Sellable == true)
+            .ToListAsync();
     }
 }

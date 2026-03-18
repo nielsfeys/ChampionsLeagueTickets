@@ -1,0 +1,20 @@
+﻿@using Microsoft.AspNetCore.Localization;
+
+@{
+    var routeController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var routeAction = ViewContext.RouteData.Values["action"]?.ToString();
+    bool isHomePage = string.Equals(routeController, "Home", StringComparison.OrdinalIgnoreCase)
+                   && string.Equals(routeAction, "Index", StringComparison.OrdinalIgnoreCase);
+    var currentCulture = isHomePage
+        ? Context.Features.Get<IRequestCultureFeature>()?.RequestCulture.UICulture.Name ?? "en"
+        : "en";
+}
+
+<form asp-controller="Home" asp-action="SetLanguage" method="post">
+    <select name="language" onchange="this.form.submit();" class="form-select form-select-sm d-inline w-auto" disabled="@(!isHomePage)">
+        <option value="en" selected="@(currentCulture == "en")">English</option>
+        <option value="nl" selected="@(currentCulture == "nl")">Nederlands</option>
+        <option value="fr" selected="@(currentCulture == "fr")">Français</option>
+    </select>
+    <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+</form>

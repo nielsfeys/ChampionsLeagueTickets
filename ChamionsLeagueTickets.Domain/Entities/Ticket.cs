@@ -9,10 +9,7 @@ public partial class Ticket
 {
     public int Id { get; set; }
 
-    public string Code { get; set; }
     public int SectionId { get; set; }
-
-    public int Seat { get; set; }
 
     public decimal Price { get; set; }
 
@@ -24,9 +21,13 @@ public partial class Ticket
 
     public string UserId { get; set; }
 
+    public string Code { get; set; }
+
+    public int Seat { get; set; }
+
     public virtual Match Match { get; set; }
 
-    public virtual Orderline Orderline { get; set; }
+    public virtual ICollection<Orderline> Orderlines { get; set; } = new List<Orderline>();
 
     public virtual StadiumSection Section { get; set; }
 

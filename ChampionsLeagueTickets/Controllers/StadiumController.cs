@@ -13,7 +13,7 @@ public class StadiumController(IClubService clubService, IStadiumSectionService 
     private readonly IMapper _mapper = mapper;
 
     public async Task<IActionResult> Index() {
-        ViewBag.Clubs = await _clubService.GetAllAsync();
+        ViewBag.Clubs = await _clubService.GetAllSellableAsync();
 
         return View();
     }

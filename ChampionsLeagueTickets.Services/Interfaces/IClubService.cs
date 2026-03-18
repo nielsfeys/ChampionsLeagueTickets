@@ -3,7 +3,7 @@ using ChampionsLeagueTickets.Repositories;
 
 namespace ChampionsLeagueTickets.Services.Interfaces;
 public interface IClubService {
-    public Task<IEnumerable<Club>?> GetAllAsync();
+    public Task<IEnumerable<Club>?> GetAllSellableAsync();
 
 }
 

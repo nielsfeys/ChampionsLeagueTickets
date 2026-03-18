@@ -49,7 +49,17 @@ namespace ChampionsLeagueTickets.Controllers {
                 return RedirectToAction("Index");
             }
 
-            await SendEmail(ticketList);
+            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            if (!string.IsNullOrEmpty(userEmail)) {
+                _ = Task.Run(async () => {
+                    try {
+                        await SendEmail(ticketList, userEmail);
+                    } catch (Exception ex) {
+                        Console.WriteLine($"Email failed: {ex.Message}");
+                    }
+                    
+                });
+            }
 
             TempData["Success"] = "Tickets succesfully added to your account. Thank you for your purchase!";
             
@@ -183,13 +193,7 @@ namespace ChampionsLeagueTickets.Controllers {
             return ticketList;
         }
 
-        private async Task SendEmail(List<Ticket> ticketList) {
-            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-
-            if (string.IsNullOrEmpty(userEmail)) {
-                return;
-            }
-
+        private async Task SendEmail(List<Ticket> ticketList, string userEmail) {
             var attachments = new List<(byte[] Content, string FileName, string ContentType)>();
             var emailBody = new StringBuilder();
             emailBody.AppendLine("<h2>Thank you for your purchase!</h2>");
@@ -243,7 +247,6 @@ namespace ChampionsLeagueTickets.Controllers {
                 return false;
             }
 
-            // Get user's existing day tickets
             List<Ticket>? ownedDayTickets = await _ticketService.GetOwnedDayTicketsAsync(userId);
 
             if (ownedDayTickets == null) {

@@ -7,6 +7,14 @@
 
 <h1>My tickets</h1>
 
+@if (TempData["Error"] != null) {
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
 @if (Model.Tickets.Count > 0) {
     var dayTicketsStart = 0;
     if (Model.Tickets.Any( t => t.Type == "Season"))
@@ -70,14 +78,16 @@
                             <td>
                                 <form method="post" asp-controller="History" asp-action="Cancel">
                                     @Html.AntiForgeryToken()
-                                    <input type="hidden" name="ticketId" value=@item.Id/>
-                                    @if (item.Match.Date < DateOnly.FromDateTime(DateTime.Today.AddDays(7)))
-                                        {
-                                            <button class="btn btn-sm disabled">Cancel</button>
-                                        } else
-                                        {
-                                        <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
-                                        }     
+                                    <input type="hidden" name="ticketId" value="@item.Id"/>
+                                    @if (item.Status == "Cancelled"){
+                                        <button class="btn btn-sm disabled">Cancelled</button>
+                                    } else if (item.Match.Date < DateOnly.FromDateTime(DateTime.Today.AddDays(7)))
+                                    {
+                                        <button class="btn btn-sm disabled">Cancel</button>
+                                    } else
+                                    {
+                                    <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                                    }     
                                 </form>
                             </td>
                         </tr>

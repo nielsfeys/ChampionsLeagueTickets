@@ -29,7 +29,7 @@ public class TicketService(ITicketDAO ticketDAO) : ITicketService {
     }
 
     public async Task<List<Ticket>> GetAllUserTicketsAsync(string userId) {
-        return await _ticketDAO.GetAllByUserIdAsync(userId);
+        return await _ticketDAO.GetAllUserTicketsAsync(userId);
     }
     public async Task<bool> CancelTicketAsync(int ticketId, string userId) {
         return await _ticketDAO.CancelTicketAsync(ticketId, userId);

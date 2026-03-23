@@ -31,13 +31,13 @@ namespace ChampionsLeagueTickets.Controllers {
             List<Ticket>? ticketList = await MakeTicketList();
 
             if (ticketList == null) {
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId)) {
                 TempData["Error"] = "User not found.";
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
 
             try {
@@ -46,7 +46,7 @@ namespace ChampionsLeagueTickets.Controllers {
                 await _orderService.CreateOrderWithOrderlinesAsync(userId, ticketList);
             } catch(Exception) {
                 TempData["Error"] = "An error occurred while processing your order. Please try again.";
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
 
             var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
@@ -64,7 +64,7 @@ namespace ChampionsLeagueTickets.Controllers {
             TempData["Success"] = "Tickets succesfully added to your account. Thank you for your purchase!";
             
             HttpContext.Session.Remove("ShoppingCart");
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
@@ -79,7 +79,7 @@ namespace ChampionsLeagueTickets.Controllers {
                 TempData["Success"] = "Season ticket removed from cart.";
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
@@ -94,7 +94,7 @@ namespace ChampionsLeagueTickets.Controllers {
                 TempData["Success"] = "Ticket removed from cart.";
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
@@ -102,7 +102,7 @@ namespace ChampionsLeagueTickets.Controllers {
         public IActionResult UpdateDayTicketQuantity(int sectionId, int matchId, int quantity) {
             if (quantity < 1 || quantity > 4) {
                 TempData["Error"] = "Quantity must be between 1 and 4.";
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
 
             var shoppingCart = HttpContext.Session.GetObject<ShoppingCartVM>("ShoppingCart") ?? new ShoppingCartVM();
@@ -113,7 +113,7 @@ namespace ChampionsLeagueTickets.Controllers {
                 HttpContext.Session.SetObject("ShoppingCart", shoppingCart);
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         private async Task<List<Ticket>?> MakeTicketList() {

@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
 using ChampionsLeagueTickets.Domain.Entities;
-using ChampionsLeagueTickets.Extensions;
 using ChampionsLeagueTickets.Services.Interfaces;
 using ChampionsLeagueTickets.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ChampionsLeagueTickets.Controllers;
 public class StadiumController(IClubService clubService, IStadiumSectionService stadiumSectionService, IMapper mapper) : Controller {
@@ -18,13 +16,19 @@ public class StadiumController(IClubService clubService, IStadiumSectionService 
         return View();
     }
 
-    public async Task<IActionResult> IndexWithFilter(string clubName) {
-        IEnumerable<StadiumSection>? StadiumSections = await _stadiumSectionService.GetAllByClubNameAsync(clubName);
-        StadiumVM StadiumVM = new();
-
-        if (StadiumSections != null) {
-            StadiumVM.SectionVMs = _mapper.Map<List<SectionVM>>(StadiumSections);
+    public async Task<IActionResult> IndexWithFilter(string? clubName) {
+        if (clubName == null) {
+            return NotFound();
         }
+
+        IEnumerable<StadiumSection>? StadiumSections = await _stadiumSectionService.GetAllByClubNameAsync(clubName);
+        
+        if (StadiumSections == null || !StadiumSections.Any()) {
+            return NotFound();
+        }
+
+        StadiumVM StadiumVM = new();
+        StadiumVM.SectionVMs = _mapper.Map<List<SectionVM>>(StadiumSections);
 
         return PartialView("_stadiumDetails", StadiumVM);
     }    

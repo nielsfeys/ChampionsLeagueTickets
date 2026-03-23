@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using ChampionsLeagueTickets.Domain.Entities;
 using ChampionsLeagueTickets.Extensions;
-using ChampionsLeagueTickets.Services;
 using ChampionsLeagueTickets.Services.Interfaces;
 using ChampionsLeagueTickets.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -35,14 +34,8 @@ public class SeasonTicketsController(IClubService clubService, IStadiumSectionSe
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AddToCart(int? sectionId) {
-        //Should never get triggered
-        if (!sectionId.HasValue) {
-            return NotFound();
-        }
-
-        //Should never get triggered
-        StadiumSection? stadiumSection = await _stadiumSectionService.FindByIdAsync(sectionId.Value);
+    public async Task<IActionResult> AddToCart(int sectionId) {
+        StadiumSection? stadiumSection = await _stadiumSectionService.FindByIdAsync(sectionId);
         if (stadiumSection == null) {
             return NotFound();
         }
@@ -58,7 +51,7 @@ public class SeasonTicketsController(IClubService clubService, IStadiumSectionSe
         }
 
         shoppingCartVM.SeasonTickets.Add(new SeasonTicketVM {
-            SectionId = sectionId.Value,
+            SectionId = sectionId,
             HomeClubName = stadiumSection.HomeTeamNavigation.Name,
             Ring = stadiumSection.Ring,
             Location = stadiumSection.Location,

@@ -32,15 +32,17 @@ public class HistoryController(ITicketService ticketService, UserManager<Identit
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Cancel(int ticketId) {
+    public async Task<IActionResult> Cancel(int? ticketId) {
         var user = await _userManager.GetUserAsync(User);
 
-        if (await _ticketService.CancelTicketAsync(ticketId, user!.Id)) {
+        //if ticketId is null, we would already get a 400 bad request
+        //we know user is logged in because of [authorize]
+        if (await _ticketService.CancelTicketAsync(ticketId!.Value, user!.Id)) {
             TempData["Success"] = "Your ticket has been cancelled.";
         } else {
             TempData["Error"] = "Could not cancel your ticket. Please try again.";
         }
 
-        return RedirectToAction("Index");
+        return RedirectToAction(nameof(Index));
     }
 }

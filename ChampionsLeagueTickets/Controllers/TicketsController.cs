@@ -45,21 +45,29 @@ public class TicketsController(IStadiumSectionService stadiumSectionService, IMa
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddToCart(int? matchId, int? sectionId, int? quantity) {
         //Check all required arguments are properly filled
-        //Should never get triggered
         if (!matchId.HasValue || !sectionId.HasValue || !quantity.HasValue) {
             return NotFound();
         }
 
         //Check the match and stadiumsection exist
-        //Should never get triggered
         Match? match = await _matchService.GetByIdAsync(matchId.Value);
         StadiumSection? stadiumSection = await _stadiumSectionService.FindByIdAsync(sectionId.Value);
         if (stadiumSection == null || match == null) {
             return NotFound();
         }
 
+        //Check that the matchId and sectionId are for the same hometeam
+        if (match.Hometeam != stadiumSection.HomeTeam) {
+            return NotFound();
+        }
+
         if (quantity.Value <= 0) {
             TempData["Error"] = "You need to add at least 1 ticket.";
+            return RedirectToAction(nameof(Index), new { matchId = matchId.Value });
+        }
+
+        if (quantity.Value > 4) {
+            TempData["Error"] = "You can't buy more than 4 tickets.";
             return RedirectToAction(nameof(Index), new { matchId = matchId.Value });
         }
 

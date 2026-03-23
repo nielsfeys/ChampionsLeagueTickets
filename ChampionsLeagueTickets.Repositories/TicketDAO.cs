@@ -110,7 +110,6 @@ public class TicketDAO (ChampionsLeagueDbContext dbContext): ITicketDAO {
             return false;
         }
 
-        // For season tickets, there's no match to check the date
         if (ticket.Type == "Day" && ticket.Match != null && 
             ticket.Match.Date < DateOnly.FromDateTime(DateTime.Today.AddDays(7))) {
             return false;

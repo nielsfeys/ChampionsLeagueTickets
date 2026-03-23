@@ -47,7 +47,7 @@ namespace ChampionsLeagueTickets.Controllers {
         public async Task<IActionResult> Book() {
             TempData["Success"] = "Your room(s) has been booked.";
 
-            return RedirectToAction("Search");
+            return RedirectToAction(nameof(Search));
         }
     }
 }

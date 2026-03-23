@@ -18,7 +18,11 @@ public class CalendarController(IClubService clubService, IMatchService matchSer
         return View(MatchVMs);
     }
 
-    public async Task<IActionResult> IndexWithFilter(string clubName) {
+    public async Task<IActionResult> IndexWithFilter(string? clubName) {
+        if (clubName == null) {
+            return NotFound();
+        }
+
         IEnumerable<Match>? Matches;
         if (clubName == "All") {
             Matches = await _matchService.GetAllFutureAsync();

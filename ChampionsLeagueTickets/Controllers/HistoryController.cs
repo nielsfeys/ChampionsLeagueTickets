@@ -15,11 +15,17 @@ public class HistoryController(ITicketService ticketService, UserManager<Identit
     public async Task<IActionResult> Index() {
         var user = await _userManager.GetUserAsync(User);
 
+        // We know user is logged in because of [Authorize]
         var tickets = await _ticketService.GetAllUserTicketsAsync(user!.Id);
 
-        var History = new HistoryVM {
-            Tickets = tickets ?? []
-        };
+        var History = new HistoryVM();
+
+        if (tickets == null) {
+            TempData["Error"] = "You don't own any tickets yet";
+            History.Tickets = [];
+        } else {
+            History.Tickets = tickets;
+        }
 
         return View(History);
     }

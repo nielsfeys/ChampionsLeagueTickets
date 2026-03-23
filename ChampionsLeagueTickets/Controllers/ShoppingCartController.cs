@@ -204,14 +204,14 @@ namespace ChampionsLeagueTickets.Controllers {
                 var ticket = ticketList[i];
                 var qrCodeBytes = GenerateQRCode(ticket.Code);
                 string fileName;
-                var homeClub = ticket.Match?.HometeamNavigation?.Name ?? "Unknown";
                 var ring = ticket.Section?.Ring ?? "Unknown";
                 var location = ticket.Section?.Location ?? "Unknown";
                 var seat = ticket.Seat;
                 if (ticket.Type == "Season") {
-                    
+                    var homeClub = ticket.Section?.HomeTeamNavigation?.Name ?? "Unknown";
                     fileName = $"SeasonTicket_{homeClub}_{ring}_{location}_{seat}.png";
                 } else {
+                    var homeClub = ticket.Match?.HometeamNavigation?.Name ?? "Unknown";
                     var awayClub = ticket.Match?.AwayteamNavigation?.Name ?? "Unknown";
                     var date = ticket.Match?.Date.ToString("yyyy-MM-dd") ?? "Unknown";
                     fileName = $"Ticket_{homeClub}_{awayClub}_{date}_{ring}_{location}_{seat}.png";

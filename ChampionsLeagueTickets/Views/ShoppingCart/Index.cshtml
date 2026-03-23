@@ -77,7 +77,7 @@
         <tbody>
         @foreach (var item in Model.DayTickets) {
             <tr>
-                <td>@item.MatchDate</td>
+                <td>@item.MatchDate.ToString()</td>
                 <td>@item.HomeClubName</td>
                 <td>@item.AwayClubName</td>
                 <td>@item.Ring</td>

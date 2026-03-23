@@ -19,7 +19,7 @@ else {
             @foreach (var item in Model) {
                 var isDisabled = item.Date < DateOnly.FromDateTime(DateTime.Today) || item.Date > DateOnly.FromDateTime(DateTime.Today.AddMonths(1));
                 <tr>
-                    <td>@item.Date</td>
+                    <td>@item.Date.ToString()</td>
                     <td>@item.HomeTeam</td>
                     <td>@item.AwayTeam</td>
                     <td>

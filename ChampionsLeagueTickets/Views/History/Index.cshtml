@@ -15,7 +15,7 @@
     <div class="alert alert-success">@TempData["Success"]</div>
 }
 
-@if (Model.Tickets.Count > 0) {
+@{
     var dayTicketsStart = 0;
     if (Model.Tickets.Any( t => t.Type == "Season"))
     {
@@ -69,7 +69,7 @@
                     var item = Model.Tickets[i];
                     if (item.Type == "Day") {
                         <tr>
-                            <td>@item.Match.Date</td>
+                            <td>@item.Match.Date.ToString()</td>
                             <td>@item.Match.HometeamNavigation.Name</td>
                             <td>@item.Match.AwayteamNavigation.Name</td>
                             <td>@item.Section.Ring</td>
@@ -97,9 +97,4 @@
             </tbody>
         </table>
     }
-
-    
-        
-} else {
-    <div class="alert alert-danger">You don't own any tickets yet.</div>
 }

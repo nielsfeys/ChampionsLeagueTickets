@@ -32,7 +32,9 @@ namespace ChampionsLeagueTickets.Controllers {
                 var results = await _hotelService.SearchHotelsAsync(
                     model.Destination, model.CheckIn, model.CheckOut, model.Adults, model.RoomQuantity);
 
-                if (results.Count == 0) {
+                if (results == null) {
+                    TempData["Error"] = "API Quota exceeded. Tell website owner to upgrade their plan.";
+                }else if (results.Count == 0) {
                     TempData["Error"] = "No hotels found for the given criteria. Try a different city.";
                 } else {
                     model.Results = _mapper.Map<List<HotelOfferVM>>(results);

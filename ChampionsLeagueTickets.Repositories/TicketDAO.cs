@@ -48,43 +48,16 @@ public class TicketDAO (ChampionsLeagueDbContext dbContext): ITicketDAO {
             .ToListAsync();
     }
 
-    public async Task<Dictionary<int, int>> GetSeasonTicketCountsBySectionsAsync(List<int> sectionIds) {
-        if (sectionIds == null || sectionIds.Count == 0) {
-            return new Dictionary<int, int>();
-        }
-
+    public async Task<int> GetSeasonTicketCountBySectionAsync(int sectionId) {
         return await _dbContext.Tickets
-            .Where(t => t.Type == "Season" && sectionIds.Contains(t.SectionId))
-            .GroupBy(t => t.SectionId)
-            .Select(g => new { SectionId = g.Key, Count = g.Count() })
-            .ToDictionaryAsync(x => x.SectionId, x => x.Count);
+            .Where(t => t.Type == "Season" && sectionId == t.SectionId)
+            .CountAsync();
     }
 
-    public async Task<Dictionary<(int MatchId, int SectionId), int>> GetDayTicketCountsByMatchAndSectionsAsync(List<(int MatchId, int SectionId)> matchSectionPairs) {
-        if (matchSectionPairs == null || matchSectionPairs.Count == 0) {
-            return new Dictionary<(int, int), int>();
-        }
-
-        // Create a list of match IDs and section IDs for efficient querying
-        var matchIds = matchSectionPairs.Select(p => p.MatchId).Distinct().ToList();
-        var sectionIds = matchSectionPairs.Select(p => p.SectionId).Distinct().ToList();
-
-        // Query all relevant tickets in one go
-        var ticketCounts = await _dbContext.Tickets
-            .Where(t => t.Type == "Day" && 
-                   t.MatchId.HasValue && 
-                   matchIds.Contains(t.MatchId.Value) && 
-                   sectionIds.Contains(t.SectionId))
-            .GroupBy(t => new { MatchId = t.MatchId.Value, t.SectionId })
-            .Select(g => new { g.Key.MatchId, g.Key.SectionId, Count = g.Count() })
-            .ToListAsync();
-
-        return ticketCounts.ToDictionary(
-            x => (x.MatchId, x.SectionId),
-            x => x.Count
-        );
-
-
+    public async Task<int> GetDayTicketCountByMatchAndSectionAsync(int matchId, int sectionId) {
+        return await _dbContext.Tickets
+            .Where(t => t.Type == "Day" && t.MatchId == matchId && t.SectionId == sectionId)
+            .CountAsync();
     }
 
     public async Task<List<Ticket>> GetAllUserTicketsAsync(string userId) {

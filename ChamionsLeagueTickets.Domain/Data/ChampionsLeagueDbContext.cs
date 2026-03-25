@@ -2,13 +2,15 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using ChampionsLeagueTickets.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.SqlServer;
 
-namespace ChampionsLeagueTickets.Domain.Entities;
+namespace ChampionsLeagueTickets.Domain.Data;
 
-public partial class championsleagueContext : DbContext
+public partial class ChampionsLeagueDbContext : DbContext
 {
-    public championsleagueContext(DbContextOptions<championsleagueContext> options)
+    public ChampionsLeagueDbContext(DbContextOptions<ChampionsLeagueDbContext> options)
         : base(options)
     {
     }
@@ -33,7 +35,7 @@ public partial class championsleagueContext : DbContext
 
     public virtual DbSet<Orderline> Orderlines { get; set; }
 
-    public virtual DbSet<Stadiumsection> Stadiumsections { get; set; }
+    public virtual DbSet<StadiumSection> Stadiumsections { get; set; }
 
     public virtual DbSet<Ticket> Tickets { get; set; }
 
@@ -191,7 +193,7 @@ public partial class championsleagueContext : DbContext
                 .HasConstraintName("FK_OrderLines_Tickets");
         });
 
-        modelBuilder.Entity<Stadiumsection>(entity =>
+        modelBuilder.Entity<StadiumSection>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK_stadiumvakken_1");
 

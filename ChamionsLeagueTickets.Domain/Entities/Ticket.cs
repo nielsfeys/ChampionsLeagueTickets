@@ -29,7 +29,7 @@ public partial class Ticket
 
     public virtual ICollection<Orderline> Orderlines { get; set; } = new List<Orderline>();
 
-    public virtual Stadiumsection Section { get; set; }
+    public virtual StadiumSection Section { get; set; }
 
     public virtual AspNetUser User { get; set; }
 }

@@ -13,7 +13,7 @@ public partial class Club
 
     public bool Sellable { get; set; }
 
-    public int CityId { get; set; }
+    public int? CityId { get; set; }
 
     public virtual ICollection<Match> MatchAwayteamNavigations { get; set; } = new List<Match>();
 

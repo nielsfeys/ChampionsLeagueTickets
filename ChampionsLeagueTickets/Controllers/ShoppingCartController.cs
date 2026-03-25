@@ -150,16 +150,19 @@ namespace ChampionsLeagueTickets.Controllers {
             
 
             // Map Day Tickets
-           foreach (var dayTicketVM in shoppingCart.DayTickets) {
+            foreach (var dayTicketVM in shoppingCart.DayTickets) {
                 int matchTicketsSold = await _ticketService.GetDayTicketCountByMatchAndSectionAsync(dayTicketVM.MatchId, dayTicketVM.SectionId);
 
-                var options = new Action<IMappingOperationOptions>(opts => {
-                    opts.Items["UserId"] = userId;
-                    opts.Items["DayTicketsSold"] = matchTicketsSold;
-                });
+                for (int i = 0; i < dayTicketVM.Quantity; i++) {
+                    int seatOffset = i; // capture loop variable for lambda
+                    var options = new Action<IMappingOperationOptions>(opts => {
+                        opts.Items["UserId"] = userId;
+                        opts.Items["DayTicketsSold"] = matchTicketsSold + seatOffset;
+                    });
 
-                var ticket = _mapper.Map<Ticket>(dayTicketVM, options);
-                ticketList.Add(ticket);
+                    var ticket = _mapper.Map<Ticket>(dayTicketVM, options);
+                    ticketList.Add(ticket);
+                }
             }
 
             return ticketList;
@@ -259,7 +262,7 @@ namespace ChampionsLeagueTickets.Controllers {
             List<Ticket>? seasonTickets = await _ticketService.GetOwnedSeasonTicketsAsync(userId);
 
             if (seasonTickets == null) {
-                return true;
+                return false;
             }
 
             // For each seasonticket in the shopping cart, check that the user does not yet have one for this club
@@ -307,6 +310,7 @@ namespace ChampionsLeagueTickets.Controllers {
 
                 // Next seat to be assigned to a season ticket is already assigned to one or more day tickets
                 if (seats - seasonTicketCount <= maxDayTicket ) {
+                    TempData["Error"] = $"Season tickets for {seasonTicket.Ring} - {seasonTicket.Location} for club {seasonTicket.HomeClubName} are sold out";
                     return false;
                 }
             }
@@ -421,7 +425,7 @@ namespace ChampionsLeagueTickets.Controllers {
         //Returns false otherwise
         private async Task<bool> CheckDayTicketsAmount(List<DayTicketVM> dayTicketVMs) {
             if (dayTicketVMs.Count == 0) {
-                return false;
+                return true;
             }
 
             var cartTicketsByMatchAndSection = dayTicketVMs

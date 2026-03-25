@@ -18,7 +18,7 @@ public abstract class TicketVM {
 }
 
 public class SeasonTicketVM : TicketVM{
-    public static readonly DateOnly SeasonStart = DateOnly.FromDateTime(new(2026, 5, 15));
+    public static readonly DateOnly SeasonStart = DateOnly.FromDateTime(new(2026, 4, 15));
     public static readonly int PriceMultiplier = 10;
 
 }

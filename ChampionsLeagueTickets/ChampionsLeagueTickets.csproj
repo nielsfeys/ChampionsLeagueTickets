@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ChamionsLeagueTickets.Domain\ChampionsLeagueTickets.Domain.csproj" />
+    <ProjectReference Include="..\ChampionsLeagueTickets.Domain\ChampionsLeagueTickets.Domain.csproj" />
     <ProjectReference Include="..\ChampionsLeagueTickets.Services\ChampionsLeagueTickets.Services.csproj" />
   </ItemGroup>
 

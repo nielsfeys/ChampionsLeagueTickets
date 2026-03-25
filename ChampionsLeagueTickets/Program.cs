@@ -17,7 +17,6 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 //Add Automapper
 builder.Services.AddAutoMapper(typeof(Program));
 
-// DbContext voor Identity
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 

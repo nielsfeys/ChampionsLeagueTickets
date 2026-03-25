@@ -93,5 +93,12 @@ public class TicketDAO (ChampionsLeagueDbContext dbContext): ITicketDAO {
         
         return true;
     }
+
+    public async Task<int> GetMaxDayTicketsBySectionAsync(int sectionId) {
+        return await _dbContext.Tickets
+            .Where(t => t.Type == "Day" && sectionId == t.SectionId)
+            .Select(t => (int?)t.Seat)
+            .MaxAsync() ?? 0;
+    }
 }
 

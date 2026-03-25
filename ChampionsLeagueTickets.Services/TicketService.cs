@@ -34,5 +34,8 @@ public class TicketService(ITicketDAO ticketDAO) : ITicketService {
     public async Task<bool> CancelTicketAsync(int ticketId, string userId) {
         return await _ticketDAO.CancelTicketAsync(ticketId, userId);
     }
+    public async Task<int> GetMaxDayTicketsBySectionAsync(int sectionId) {
+        return await _ticketDAO.GetMaxDayTicketsBySectionAsync(sectionId);
+    }
 }
 

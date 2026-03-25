@@ -14,5 +14,6 @@ public interface ITicketService {
     public Task<int> GetDayTicketCountByMatchAndSectionAsync(int matchId, int SectionId);    
     public Task<List<Ticket>> GetAllUserTicketsAsync(string userId);
     public Task<bool> CancelTicketAsync(int ticketId, string userId);
+    public Task<int> GetMaxDayTicketsBySectionAsync(int sectionId);
 }
 

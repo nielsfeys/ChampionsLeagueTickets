@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace ChampionsLeagueTickets.Domain.Entities;
 
-public partial class StadiumSection
+public partial class Stadiumsection
 {
     public int Id { get; set; }
 

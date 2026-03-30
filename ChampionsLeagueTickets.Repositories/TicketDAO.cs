@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace ChampionsLeagueTickets.Repositories;
 public class TicketDAO (ChampionsLeagueDbContext dbContext): ITicketDAO {
     private readonly ChampionsLeagueDbContext _dbContext = dbContext;
+
     public async Task AddListAsync(List<Ticket> ticketList) {
         foreach (var ticket in ticketList) {
             _dbContext.Entry(ticket).State = EntityState.Added;
@@ -35,7 +36,7 @@ public class TicketDAO (ChampionsLeagueDbContext dbContext): ITicketDAO {
         return await _dbContext.Tickets
             .Include(t => t.Section)
             .ThenInclude(s => s.HomeTeamNavigation)
-            .Where(t => t.UserId == userId && t.Type == "Season")
+            .Where(t => t.Type == "Season" && t.Orderlines.Any(ol => ol.Order.UserId == userId))
             .ToListAsync();
     }
 
@@ -44,7 +45,7 @@ public class TicketDAO (ChampionsLeagueDbContext dbContext): ITicketDAO {
             .Include(t => t.Match)
             .Include(t => t.Section)
             .ThenInclude(s => s.HomeTeamNavigation)
-            .Where(t => t.UserId == userId && t.Type == "Day")
+            .Where(t => t.Type == "Day" && t.Orderlines.Any(ol => ol.Order.UserId == userId))
             .ToListAsync();
     }
 
@@ -68,7 +69,7 @@ public class TicketDAO (ChampionsLeagueDbContext dbContext): ITicketDAO {
                 .ThenInclude(m => m.AwayteamNavigation)
             .Include(t => t.Section)
                 .ThenInclude(m => m.HomeTeamNavigation)
-            .Where(t => t.UserId == userId)
+            .Where(t => t.Orderlines.Any(ol => ol.Order.UserId == userId))
             .OrderByDescending(t => t.Type)
             .ThenBy(t => t.Match.Date)
             .ToListAsync();
@@ -77,9 +78,11 @@ public class TicketDAO (ChampionsLeagueDbContext dbContext): ITicketDAO {
     public async Task<bool> CancelTicketAsync(int ticketId, string userId) {
         var ticket = await _dbContext.Tickets
             .Include(t => t.Match)
+            .Include(t => t.Orderlines)
+                .ThenInclude(ol => ol.Order)
             .FirstOrDefaultAsync(t => t.Id == ticketId);
-        
-        if (ticket == null || ticket.UserId != userId) {
+
+        if (ticket == null || !ticket.Orderlines.Any(ol => ol.Order.UserId == userId)) {
             return false;
         }
 

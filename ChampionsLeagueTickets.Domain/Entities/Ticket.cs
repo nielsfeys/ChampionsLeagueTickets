@@ -19,8 +19,6 @@ public partial class Ticket
 
     public string Type { get; set; }
 
-    public string UserId { get; set; }
-
     public string Code { get; set; }
 
     public int Seat { get; set; }
@@ -30,6 +28,4 @@ public partial class Ticket
     public virtual ICollection<Orderline> Orderlines { get; set; } = new List<Orderline>();
 
     public virtual StadiumSection Section { get; set; }
-
-    public virtual AspNetUser User { get; set; }
 }

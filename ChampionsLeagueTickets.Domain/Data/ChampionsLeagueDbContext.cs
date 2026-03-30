@@ -170,7 +170,7 @@ public partial class ChampionsLeagueDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Order_User");
+                .HasConstraintName("FK_Order_AspNetUser");
         });
 
         modelBuilder.Entity<Orderline>(entity =>
@@ -184,12 +184,12 @@ public partial class ChampionsLeagueDbContext : DbContext
             entity.HasOne(d => d.Order).WithMany(p => p.Orderlines)
                 .HasForeignKey(d => d.OrderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_OrderLine_Orders");
+                .HasConstraintName("FK_OrderLine_Order");
 
             entity.HasOne(d => d.Ticket).WithMany(p => p.Orderlines)
                 .HasForeignKey(d => d.TicketId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_OrderLines_Tickets");
+                .HasConstraintName("FK_OrderLine_Ticket");
         });
 
         modelBuilder.Entity<StadiumSection>(entity =>
@@ -205,7 +205,7 @@ public partial class ChampionsLeagueDbContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("location");
             entity.Property(e => e.Price)
-                .HasColumnType("decimal(10, 2)")
+                .HasColumnType("decimal(19, 2)")
                 .HasColumnName("price");
             entity.Property(e => e.Ring)
                 .IsRequired()
@@ -216,7 +216,7 @@ public partial class ChampionsLeagueDbContext : DbContext
             entity.HasOne(d => d.HomeTeamNavigation).WithMany(p => p.Stadiumsections)
                 .HasForeignKey(d => d.HomeTeam)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Stadiumvakken_Home_Team");
+                .HasConstraintName("FK_Stadiumsection_Home_Team");
         });
 
         modelBuilder.Entity<Ticket>(entity =>
@@ -242,24 +242,15 @@ public partial class ChampionsLeagueDbContext : DbContext
                 .IsRequired()
                 .HasMaxLength(50)
                 .HasColumnName("type");
-            entity.Property(e => e.UserId)
-                .IsRequired()
-                .HasMaxLength(450)
-                .HasColumnName("userId");
 
             entity.HasOne(d => d.Match).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.MatchId)
-                .HasConstraintName("FK_Tickets_Matches");
+                .HasConstraintName("FK_Ticket_Match");
 
             entity.HasOne(d => d.Section).WithMany(p => p.Tickets)
                 .HasForeignKey(d => d.SectionId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Tickets_StadiumSections");
-
-            entity.HasOne(d => d.User).WithMany(p => p.Tickets)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Tickets_AspNetUsers");
+                .HasConstraintName("FK_Ticket_Stadiumsection");
         });
 
         OnModelCreatingPartial(modelBuilder);

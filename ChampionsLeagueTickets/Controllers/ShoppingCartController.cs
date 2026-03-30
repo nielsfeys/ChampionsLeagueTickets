@@ -145,7 +145,6 @@ namespace ChampionsLeagueTickets.Controllers {
                 int seasonTicketsSold = await _ticketService.GetSeasonTicketCountBySectionAsync(seasonTicketVM.SectionId);
 
                 var options = new Action<IMappingOperationOptions>(opts => {
-                    opts.Items["UserId"] = userId;
                     opts.Items["TotalSeats"] = section.Seats;
                     opts.Items["SeasonTicketsSold"] = seasonTicketsSold;
                 });
@@ -160,7 +159,6 @@ namespace ChampionsLeagueTickets.Controllers {
                 int matchTicketsSold = await _ticketService.GetDayTicketCountByMatchAndSectionAsync(dayTicketVM.MatchId, dayTicketVM.SectionId);
 
                 var options = new Action<IMappingOperationOptions>(opts => {
-                    opts.Items["UserId"] = userId;
                     opts.Items["DayTicketsSold"] = matchTicketsSold;
                 });
 
@@ -427,7 +425,7 @@ namespace ChampionsLeagueTickets.Controllers {
         //Returns false otherwise
         private async Task<bool> CheckDayTicketsAmount(List<DayTicketVM> dayTicketVMs) {
             if (dayTicketVMs.Count == 0) {
-                return false;
+                return true;
             }
 
             var cartTicketsByMatchAndSection = dayTicketVMs

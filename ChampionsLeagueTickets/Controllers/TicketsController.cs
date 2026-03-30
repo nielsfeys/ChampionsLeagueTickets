@@ -38,7 +38,7 @@ public class TicketsController(IStadiumSectionService stadiumSectionService, IMa
             return View(stadiumVM);
         } catch (Exception) {
             TempData["Error"] = "Could not load the ticket page. Please try again.";
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction(nameof(HomeController.Index), "Home");
         }
     }
 

@@ -89,9 +89,13 @@ public class TicketDAO (ChampionsLeagueDbContext dbContext): ITicketDAO {
         }
 
         ticket.Status = "Cancelled";
-        await _dbContext.SaveChangesAsync();
-        
-        return true;
+
+        try {
+            await _dbContext.SaveChangesAsync();
+            return true;
+        } catch (DbUpdateException) {
+            return false;
+        }
     }
 
     public async Task<int> GetMaxDayTicketsBySectionAsync(int sectionId) {

@@ -27,7 +27,14 @@ namespace ChampionsLeagueTickets.Controllers {
         [ValidateAntiForgeryToken]
         [Authorize]
         public async Task<IActionResult> Checkout() {
-            List<Ticket>? ticketList = await MakeTicketList();
+            List<Ticket>? ticketList;
+
+            try {
+                ticketList = await MakeTicketList();
+            } catch (Exception) {
+                TempData["Error"] = "An error occurred while preparing your order. Please try again.";
+                return RedirectToAction(nameof(Index));
+            }
 
             if (ticketList == null) {
                 return RedirectToAction(nameof(Index));
@@ -41,9 +48,8 @@ namespace ChampionsLeagueTickets.Controllers {
 
             try {
                 await _ticketService.AddListAsync(ticketList);
-
                 await _orderService.CreateOrderWithOrderlinesAsync(userId, ticketList);
-            } catch(Exception) {
+            } catch (Exception) {
                 TempData["Error"] = "An error occurred while processing your order. Please try again.";
                 return RedirectToAction(nameof(Index));
             }

@@ -11,8 +11,12 @@ public class StadiumController(IClubService clubService, IStadiumSectionService 
     private readonly IMapper _mapper = mapper;
 
     public async Task<IActionResult> Index() {
-        ViewBag.Clubs = await _clubService.GetAllSellableAsync();
-
+        try {
+            ViewBag.Clubs = await _clubService.GetAllSellableAsync();
+        } catch (Exception) {
+            TempData["Error"] = "Could not load clubs. Please try again.";
+            ViewBag.Clubs = new List<Club>();
+        }
         return View();
     }
 
@@ -21,15 +25,19 @@ public class StadiumController(IClubService clubService, IStadiumSectionService 
             return NotFound();
         }
 
-        IEnumerable<StadiumSection>? StadiumSections = await _stadiumSectionService.GetAllByClubNameAsync(clubName);
-        
-        if (StadiumSections == null || !StadiumSections.Any()) {
-            return NotFound();
+        try {
+            IEnumerable<StadiumSection>? StadiumSections = await _stadiumSectionService.GetAllByClubNameAsync(clubName);
+
+            if (StadiumSections == null || !StadiumSections.Any()) {
+                return NotFound();
+            }
+
+            StadiumVM StadiumVM = new();
+            StadiumVM.SectionVMs = _mapper.Map<List<SectionVM>>(StadiumSections);
+
+            return PartialView("_stadiumDetails", StadiumVM);
+        } catch (Exception) {
+            return PartialView("_stadiumDetails", new StadiumVM());
         }
-
-        StadiumVM StadiumVM = new();
-        StadiumVM.SectionVMs = _mapper.Map<List<SectionVM>>(StadiumSections);
-
-        return PartialView("_stadiumDetails", StadiumVM);
     }    
 }

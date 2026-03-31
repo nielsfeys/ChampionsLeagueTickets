@@ -150,6 +150,7 @@ namespace ChampionsLeagueTickets.Controllers {
                 });
 
                 var ticket = _mapper.Map<Ticket>(seasonTicketVM, options);
+                ticket.Section = section;
                 ticketList.Add(ticket);
             }
             
@@ -180,7 +181,7 @@ namespace ChampionsLeagueTickets.Controllers {
                 var ticket = ticketList[i];
                 var qrCodeBytes = GenerateQRCode(ticket.Code);
                 string fileName;
-                var homeClub = ticket.Match?.HometeamNavigation?.Name ?? "Unknown";
+                var homeClub = ticket.Section?.HomeTeamNavigation?.Name ?? ticket.Match?.HometeamNavigation?.Name ?? "Unknown";
                 var ring = ticket.Section?.Ring ?? "Unknown";
                 var location = ticket.Section?.Location ?? "Unknown";
                 var seat = ticket.Seat;

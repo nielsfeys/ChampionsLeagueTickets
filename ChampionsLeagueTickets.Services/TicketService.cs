@@ -20,12 +20,12 @@ public class TicketService(ITicketDAO ticketDAO) : ITicketService {
         return await _ticketDAO.GetOwnedDayTicketsAsync(userId);
     }
 
-    public async Task<Dictionary<int, int>> GetSeasonTicketCountsBySectionsAsync(List<int> sectionIds) {
-        return await _ticketDAO.GetSeasonTicketCountsBySectionsAsync(sectionIds);
+    public async Task<int> GetSeasonTicketCountBySectionAsync(int sectionId) {
+        return await _ticketDAO.GetSeasonTicketCountBySectionAsync(sectionId);
     }
 
-    public async Task<Dictionary<(int MatchId, int SectionId), int>> GetDayTicketCountsByMatchAndSectionsAsync(List<(int MatchId, int SectionId)> matchSectionPairs) {
-        return await _ticketDAO.GetDayTicketCountsByMatchAndSectionsAsync(matchSectionPairs);
+    public async Task<int> GetDayTicketCountByMatchAndSectionAsync(int matchId, int sectionId) {
+        return await _ticketDAO.GetDayTicketCountByMatchAndSectionAsync(matchId, sectionId);
     }
 
     public async Task<List<Ticket>> GetAllUserTicketsAsync(string userId) {
@@ -33,6 +33,9 @@ public class TicketService(ITicketDAO ticketDAO) : ITicketService {
     }
     public async Task<bool> CancelTicketAsync(int ticketId, string userId) {
         return await _ticketDAO.CancelTicketAsync(ticketId, userId);
+    }
+    public async Task<int> GetMaxDayTicketsBySectionAsync(int sectionId) {
+        return await _ticketDAO.GetMaxDayTicketsBySectionAsync(sectionId);
     }
 }
 

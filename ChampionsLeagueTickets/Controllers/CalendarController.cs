@@ -12,24 +12,36 @@ public class CalendarController(IClubService clubService, IMatchService matchSer
     private readonly IMapper _mapper = mapper;
 
     public async Task<IActionResult> Index() {
-        ViewBag.Clubs = await _clubService.GetAllSellableAsync();
-        var Matches = await _matchService.GetAllFutureAsync();
-        var MatchVMs = MatchToMatchVM(Matches);
-        return View(MatchVMs);
+        try {
+            ViewBag.Clubs = await _clubService.GetAllSellableAsync();
+            var Matches = await _matchService.GetAllFutureAsync();
+            var MatchVMs = MatchToMatchVM(Matches);
+            return View(MatchVMs);
+        } catch (Exception) {
+            TempData["Error"] = "Could not load the calendar. Please try again.";
+            ViewBag.Clubs = new List<Club>();
+            return View(new List<MatchVM>());
+        }
     }
 
-    public async Task<IActionResult> IndexWithFilter(string clubName) {
-        IEnumerable<Match>? Matches;
-        if (clubName == "All") {
-            Matches = await _matchService.GetAllFutureAsync();
-        } else {
-            Matches = await _matchService.GetAllFutureByNameAsync(clubName);
+    public async Task<IActionResult> IndexWithFilter(string? clubName) {
+        if (clubName == null) {
+            return NotFound();
         }
 
-        var MatchVMs = MatchToMatchVM(Matches);
-       
+        try {
+            IEnumerable<Match>? Matches;
+            if (clubName == "All") {
+                Matches = await _matchService.GetAllFutureAsync();
+            } else {
+                Matches = await _matchService.GetAllFutureByNameAsync(clubName);
+            }
 
-        return PartialView("_TeamMatchDetails", MatchVMs);
+            var MatchVMs = MatchToMatchVM(Matches);
+            return PartialView("_TeamMatchDetails", MatchVMs);
+        } catch (Exception) {
+            return PartialView("_TeamMatchDetails", new List<MatchVM>());
+        }
     }
 
     private List<MatchVM>? MatchToMatchVM(IEnumerable<Match>? matches) {

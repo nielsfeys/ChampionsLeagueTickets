@@ -3,7 +3,11 @@
 @model IEnumerable<StadiumVM>;
 
 @{
-    ViewData["Title"] = "Stadium Details - Index";
+    ViewData["Title"] = "Stadium Details";
+}
+
+@if (TempData["Error"] != null) {
+    <div class="alert alert-danger">@TempData["Error"]</div>
 }
 
 <h1>Stadium Info</h1>

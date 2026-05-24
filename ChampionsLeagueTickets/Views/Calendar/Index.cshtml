@@ -3,7 +3,11 @@
 @model IEnumerable<MatchVM>;
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Calendar";
+}
+
+@if (TempData["Error"] != null) {
+    <div class="alert alert-danger">@TempData["Error"]</div>
 }
 
 <h1>Calendar by team</h1>

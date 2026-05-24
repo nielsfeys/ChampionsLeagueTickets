@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using ChampionsLeagueTickets.Domain.Entities;
 using ChampionsLeagueTickets.Extensions;
-using ChampionsLeagueTickets.Services;
 using ChampionsLeagueTickets.Services.Interfaces;
 using ChampionsLeagueTickets.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -28,25 +27,31 @@ namespace ChampionsLeagueTickets.Controllers {
         [ValidateAntiForgeryToken]
         [Authorize]
         public async Task<IActionResult> Checkout() {
-            List<Ticket>? ticketList = await MakeTicketList();
+            List<Ticket>? ticketList;
+
+            try {
+                ticketList = await MakeTicketList();
+            } catch (Exception) {
+                TempData["Error"] = "An error occurred while preparing your order. Please try again.";
+                return RedirectToAction(nameof(Index));
+            }
 
             if (ticketList == null) {
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId)) {
                 TempData["Error"] = "User not found.";
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
 
             try {
                 await _ticketService.AddListAsync(ticketList);
-
                 await _orderService.CreateOrderWithOrderlinesAsync(userId, ticketList);
-            } catch(Exception) {
+            } catch (Exception) {
                 TempData["Error"] = "An error occurred while processing your order. Please try again.";
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
 
             var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
@@ -64,7 +69,7 @@ namespace ChampionsLeagueTickets.Controllers {
             TempData["Success"] = "Tickets succesfully added to your account. Thank you for your purchase!";
             
             HttpContext.Session.Remove("ShoppingCart");
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
@@ -79,7 +84,7 @@ namespace ChampionsLeagueTickets.Controllers {
                 TempData["Success"] = "Season ticket removed from cart.";
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
@@ -94,7 +99,7 @@ namespace ChampionsLeagueTickets.Controllers {
                 TempData["Success"] = "Ticket removed from cart.";
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
@@ -102,7 +107,7 @@ namespace ChampionsLeagueTickets.Controllers {
         public IActionResult UpdateDayTicketQuantity(int sectionId, int matchId, int quantity) {
             if (quantity < 1 || quantity > 4) {
                 TempData["Error"] = "Quantity must be between 1 and 4.";
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
 
             var shoppingCart = HttpContext.Session.GetObject<ShoppingCartVM>("ShoppingCart") ?? new ShoppingCartVM();
@@ -113,7 +118,7 @@ namespace ChampionsLeagueTickets.Controllers {
                 HttpContext.Session.SetObject("ShoppingCart", shoppingCart);
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         private async Task<List<Ticket>?> MakeTicketList() {
@@ -125,69 +130,41 @@ namespace ChampionsLeagueTickets.Controllers {
                 return null;
             }
 
-            bool duplicateSeasonTickets = await CheckDuplicateSeasonTickets(shoppingCart.SeasonTickets);
-            if (duplicateSeasonTickets) {
-                return null;
-            }
-
-            List<Ticket> ticketList = new List<Ticket>();
+            List<Ticket> ticketList = [];
 
             // Map Season Tickets
-            if (shoppingCart.SeasonTickets.Count > 0) {
-                // Get all unique section IDs from season tickets
-                var seasonSectionIds = shoppingCart.SeasonTickets.Select(t => t.SectionId).Distinct().ToList();
-                
-                // Fetch sections and season ticket counts
-                var sections = await _stadiumSectionService.FindByIdsAsync(seasonSectionIds);
-                var sectionLookup = sections.ToDictionary(s => s.Id);
-                var seasonTicketCounts = await _ticketService.GetSeasonTicketCountsBySectionsAsync(seasonSectionIds);
+            foreach (var seasonTicketVM in shoppingCart.SeasonTickets) {
+                var section = await _stadiumSectionService.FindByIdAsync(seasonTicketVM.SectionId);
 
-                // Map each season ticket with appropriate context
-                foreach (var seasonTicketVM in shoppingCart.SeasonTickets) {
-                    if (!sectionLookup.TryGetValue(seasonTicketVM.SectionId, out var section)) {
-                        continue;
-                    }
-
-                    int seasonTicketsSold = seasonTicketCounts.TryGetValue(seasonTicketVM.SectionId, out var count) ? count : 0;
-
-                    var options = new Action<IMappingOperationOptions>(opts => {
-                        opts.Items["UserId"] = userId;
-                        opts.Items["TotalSeats"] = section.Seats;
-                        opts.Items["SeasonTicketsSold"] = seasonTicketsSold;
-                    });
-
-                    var ticket = _mapper.Map<Ticket>(seasonTicketVM, options);
-                    ticketList.Add(ticket);
+                if (section == null) {
+                    TempData["Error"] = "Something went wrong.";
+                    Console.WriteLine($"Could not find section with sectionId {seasonTicketVM.SectionId}");
+                    return null;
                 }
+
+                int seasonTicketsSold = await _ticketService.GetSeasonTicketCountBySectionAsync(seasonTicketVM.SectionId);
+
+                var options = new Action<IMappingOperationOptions>(opts => {
+                    opts.Items["TotalSeats"] = section.Seats;
+                    opts.Items["SeasonTicketsSold"] = seasonTicketsSold;
+                });
+
+                var ticket = _mapper.Map<Ticket>(seasonTicketVM, options);
+                ticket.Section = section;
+                ticketList.Add(ticket);
             }
+            
 
             // Map Day Tickets
-            if (shoppingCart.DayTickets.Count > 0) {
-                // Get all unique match/section combinations
-                var matchSectionPairs = shoppingCart.DayTickets
-                    .Select(t => (t.MatchId, t.SectionId))
-                    .Distinct()
-                    .ToList();
-                
-                // Fetch day ticket counts for all combinations
-                var dayTicketCounts = await _ticketService.GetDayTicketCountsByMatchAndSectionsAsync(matchSectionPairs);
+           foreach (var dayTicketVM in shoppingCart.DayTickets) {
+                int matchTicketsSold = await _ticketService.GetDayTicketCountByMatchAndSectionAsync(dayTicketVM.MatchId, dayTicketVM.SectionId);
 
-                // Expand day tickets by quantity and map each one
-                foreach (var dayTicketVM in shoppingCart.DayTickets) {
-                    var key = (dayTicketVM.MatchId, dayTicketVM.SectionId);
-                    int existingDayTickets = dayTicketCounts.TryGetValue(key, out var count) ? count : 0;
+                var options = new Action<IMappingOperationOptions>(opts => {
+                    opts.Items["DayTicketsSold"] = matchTicketsSold;
+                });
 
-                    for (int i = 0; i < dayTicketVM.Quantity; i++) {
-                        var options = new Action<IMappingOperationOptions>(opts => {
-                            opts.Items["UserId"] = userId;
-                            // Each ticket gets the next available seat number
-                            opts.Items["DayTicketsSold"] = existingDayTickets + i;
-                        });
-
-                        var ticket = _mapper.Map<Ticket>(dayTicketVM, options);
-                        ticketList.Add(ticket);
-                    }
-                }
+                var ticket = _mapper.Map<Ticket>(dayTicketVM, options);
+                ticketList.Add(ticket);
             }
 
             return ticketList;
@@ -216,7 +193,6 @@ namespace ChampionsLeagueTickets.Controllers {
                     var date = ticket.Match?.Date.ToString("yyyy-MM-dd") ?? "Unknown";
                     fileName = $"Ticket_{homeClub}_{awayClub}_{date}_{ring}_{location}_{seat}.png";
                 }
-
                 attachments.Add((qrCodeBytes, fileName, "image/png"));
             }
 
@@ -239,11 +215,15 @@ namespace ChampionsLeagueTickets.Controllers {
                 return false;
             }
 
-            if (await CheckDuplicateSeasonTickets(shoppingCart.SeasonTickets)) {
+            if (!await CheckNoDuplicateSeasonTickets(shoppingCart.SeasonTickets)) {
                 return false;
             }
 
-            if (CheckSeasonTicketsBeforeSeasonStart(shoppingCart.SeasonTickets)) {
+            if (!CheckBeforeSeasonStart(shoppingCart.SeasonTickets)) {
+                return false;
+            }
+
+            if (!await CheckSeasonTicketSeatAvailable(shoppingCart.SeasonTickets)) {
                 return false;
             }
 
@@ -254,38 +234,38 @@ namespace ChampionsLeagueTickets.Controllers {
                 return false;
             }
 
-            if (CheckDayTicketsBuyDate(shoppingCart.DayTickets)) {
+            if (!CheckDayTicketsBuyDate(shoppingCart.DayTickets)) {
                 return false;
             }
 
-            if (await CheckDayTicketsForMultipleMatchSameDay(shoppingCart.DayTickets, ownedDayTickets)) {
+            if (!await CheckNoDayTicketsForMultipleMatchSameDay(shoppingCart.DayTickets, ownedDayTickets)) {
                 return false;
             }
 
-            if (await CheckDayTicketsForQuantity(shoppingCart.DayTickets, ownedDayTickets)) {
+            if (!await CheckDayTicketQuantityAllowed(shoppingCart.DayTickets, ownedDayTickets)) {
                 return false;
             }
 
-            if (await CheckTooManyTickets(shoppingCart.DayTickets)) {
+            if (!await CheckDayTicketsAmount(shoppingCart.DayTickets)) {
                 return false;
             }
 
             return true;
         }
 
-        //Returns true if duplicates found
-        //Returns false if duplicates not found
-        private async Task<bool> CheckDuplicateSeasonTickets(List<SeasonTicketVM> seasonTicketVMs) {
+        //Returns true if no duplicates found
+        //Returns false otherwise
+        private async Task<bool> CheckNoDuplicateSeasonTickets(List<SeasonTicketVM> seasonTicketVMs) {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (userId == null) {
-                return true;
+                return false;
             }
 
             List<Ticket>? seasonTickets = await _ticketService.GetOwnedSeasonTicketsAsync(userId);
 
             if (seasonTickets == null) {
-                return false;
+                return true;
             }
 
             // For each seasonticket in the shopping cart, check that the user does not yet have one for this club
@@ -294,37 +274,67 @@ namespace ChampionsLeagueTickets.Controllers {
                     var ownedHomeClub = ownedTicket.Section?.HomeTeamNavigation?.Name;
                     if (!string.IsNullOrEmpty(ownedHomeClub) && ownedHomeClub == cartTicket.HomeClubName) {
                         TempData["Error"] = $"You already have a season ticket for this club: {ownedHomeClub}. Please remove it from your cart.";
-                        return true;
+                        return false;
                     }
                 }
             }
-            return false;
+            return true;
         }
 
-        //Returns true if season has already started and user is trying to buy seasontickets
+        //Returns true if season not yet started when trying to buy a seasonTicket
         //Returns false otherwise
-        private bool CheckSeasonTicketsBeforeSeasonStart(List<SeasonTicketVM> seasonTicketVMs) {
+        private bool CheckBeforeSeasonStart(List<SeasonTicketVM> seasonTicketVMs) {
             if (seasonTicketVMs.Count > 0 && SeasonTicketVM.SeasonStart <= DateOnly.FromDateTime(DateTime.Today)) {
                 TempData["Error"] = "You can only buy season tickets before the start of the season. Please remove any season tickets from your cart.";
-                return true;   
+                return false;   
             }
 
-            return false;
+            return true;
         }
 
-        //Returns true if user tries to buy tickets for multiple different matches on the same day
+        //Returns true if there is a seat available for this season ticket
         //Returns false otherwise
-        private async Task<bool> CheckDayTicketsForMultipleMatchSameDay(List<DayTicketVM> dayTicketVMs, List<Ticket> ownedDayTickets) {
+        private async Task<bool> CheckSeasonTicketSeatAvailable(List<SeasonTicketVM> seasonTicketVMs) {
+            if (seasonTicketVMs.Count == 0) {
+                return true; 
+            }
+
+            foreach (var seasonTicket in seasonTicketVMs) {
+                var section = await _stadiumSectionService.FindByIdAsync(seasonTicket.SectionId);
+                if (section == null) {
+                    Console.WriteLine($"Invalid section id: {seasonTicket.SectionId}");
+                    TempData["Error"] = $"Something went wrong with season ticket for {seasonTicket.HomeClubName}";
+                    return false;
+                }
+
+                var seats = section.Seats;
+                var maxDayTicket = await _ticketService.GetMaxDayTicketsBySectionAsync(seasonTicket.SectionId);
+                var seasonTicketCount = await _ticketService.GetSeasonTicketCountBySectionAsync(seasonTicket.SectionId);
+
+                // Next seat to be assigned to a season ticket is already assigned to one or more day tickets
+                if (seats - seasonTicketCount <= maxDayTicket ) {
+                    return false;
+                }
+            }
+
+            return true;
+
+            
+
+        }
+
+        //Returns true if there are no tickets for multiple matches on the same day
+        //Returns false otherwise
+        private async Task<bool> CheckNoDayTicketsForMultipleMatchSameDay(List<DayTicketVM> dayTicketVMs, List<Ticket> ownedDayTickets) {
             if (dayTicketVMs.Count == 0) {
-                return false;
+                return true;
             }
             
-            // Group cart tickets by date and match
             var cartTicketsByDate = dayTicketVMs
                 .GroupBy(t => new { t.MatchDate, t.MatchId })
                 .ToList();
 
-            // Check for conflicts within the cart itself
+            // Check within cart itself for multiple matches on the same day
             var datesInCart = cartTicketsByDate
                 .GroupBy(g => g.Key.MatchDate)
                 .Where(g => g.Count() > 1)
@@ -332,8 +342,8 @@ namespace ChampionsLeagueTickets.Controllers {
 
             if (datesInCart.Count >0) {
                 var conflictDate = datesInCart.First().Key;
-                TempData["Error"] = $"You cannot buy tickets for different matches on the same day {conflictDate}. Please remove one from your cart.";
-                return true;
+                TempData["Error"] = $"You cannot buy tickets for different matches on {conflictDate}. Please remove one from your cart.";
+                return false;
             }
 
             // Check cart tickets against owned tickets
@@ -347,22 +357,22 @@ namespace ChampionsLeagueTickets.Controllers {
                             ownedMatchDate.Value == cartTicket.MatchDate && 
                             ownedMatchId != cartTicket.MatchId) {
                             TempData["Error"] = $"You already have a ticket for a different match on {cartTicket.MatchDate}. You cannot buy tickets for multiple matches on the same day.";
-                            return true;
+                            return false;
                         }
                     }
                 }
             }
 
-            return false;
+            return true;
         }
 
-        //Returns true if user tries to buy too many tickets for the same match
+        //Returns true if the quantity of tickets that user is trying to buy is allowed.
         //Returns false otherwise
-        private async Task<bool> CheckDayTicketsForQuantity(List<DayTicketVM> dayTicketVMs, List<Ticket> ownedDayTickets) {
+        private async Task<bool> CheckDayTicketQuantityAllowed(List<DayTicketVM> dayTicketVMs, List<Ticket> ownedDayTickets) {
             const int MAX_TICKETS = 4;
     
             if (dayTicketVMs.Count == 0) {
-                return false;
+                return true;
             }
 
             // Group cart tickets by match and sum quantities
@@ -371,7 +381,7 @@ namespace ChampionsLeagueTickets.Controllers {
                 .Select(g => new { 
                     MatchId = g.Key, 
                     Quantity = g.Sum(t => t.Quantity),
-                    MatchInfo = g.First()
+                    MatchDate = g.First().MatchDate
                 })
                 .ToList();
 
@@ -388,39 +398,38 @@ namespace ChampionsLeagueTickets.Controllers {
                     int ownedCount = ownedDayTickets?.Count(t => t.MatchId == cartGroup.MatchId) ?? 0;
                     int availableTickets = MAX_TICKETS - ownedCount;
                     
-                    TempData["Error"] = $"You cannot buy more than {MAX_TICKETS} tickets for the match on {cartGroup.MatchInfo.MatchDate}. You already own {ownedCount} ticket(s) for this match, so you can only buy {availableTickets} more." +
+                    TempData["Error"] = $"You cannot buy more than {MAX_TICKETS} tickets for the match on {cartGroup.MatchDate}. You already own {ownedCount} ticket(s) for this match, so you can only buy {availableTickets} more." +
                         $"Please remove some tickets for this date.";
-                    return true;
+                    return false;
                 }
             }
 
-            return false;
+            return true;
         }
 
-        //Returns true if today is more than 1 month before the match or is after they day of the match
+        //Returns true if today is less than 1 month before match dates and before match dates
         //Returns false otherwise
         private bool CheckDayTicketsBuyDate(List<DayTicketVM> dayTicketVMs) {
             if (dayTicketVMs.Count > 0) {
                 foreach (var ticket in dayTicketVMs) {
                     if (ticket.MatchDate > DateOnly.FromDateTime(DateTime.Today.AddMonths(1)) || ticket.MatchDate < DateOnly.FromDateTime(DateTime.Today)) {
                         TempData["Error"] = $"You can't buy tickets yet for the match on {ticket.MatchDate}";
-                        return true;
+                        return false;
                     }
                 }
             }
 
-            return false;
+            return true;
 
         }
 
-        //Returns true if any of the tickets would mean the stadiumsection goes over capacity for that match
+        //Returns true if none of the tickets would mean the stadiumsection goes over capacity for that match
         //Returns false otherwise
-        private async Task<bool> CheckTooManyTickets(List<DayTicketVM> dayTicketVMs) {
+        private async Task<bool> CheckDayTicketsAmount(List<DayTicketVM> dayTicketVMs) {
             if (dayTicketVMs.Count == 0) {
-                return false;
+                return true;
             }
 
-            // Group cart tickets by match and section
             var cartTicketsByMatchAndSection = dayTicketVMs
                 .GroupBy(t => new { t.MatchId, t.SectionId })
                 .Select(g => new {
@@ -431,55 +440,32 @@ namespace ChampionsLeagueTickets.Controllers {
                 })
                 .ToList();
 
-            // Get all unique section IDs and match IDs from cart
             var sectionIds = cartTicketsByMatchAndSection.Select(c => c.SectionId).Distinct().ToList();
-            var matchIds = cartTicketsByMatchAndSection.Select(c => c.MatchId).Distinct().ToList();
-
-            // Fetch all sections at once
             var sections = await _stadiumSectionService.FindByIdsAsync(sectionIds);
             var sectionLookup = sections.ToDictionary(s => s.Id);
 
-            // Get season ticket counts for all sections at once
-            var seasonTicketCounts = await _ticketService.GetSeasonTicketCountsBySectionsAsync(sectionIds);
-
-            // Get day ticket counts for all match/section combinations at once
-            var matchSectionPairs = cartTicketsByMatchAndSection
-                .Select(c => (c.MatchId, c.SectionId))
-                .ToList();
-            var dayTicketCounts = await _ticketService.GetDayTicketCountsByMatchAndSectionsAsync(matchSectionPairs);
-
-            // Now check each cart group using pre-fetched data
             foreach (var cartGroup in cartTicketsByMatchAndSection) {
-                // Get section from lookup
-                if (!sectionLookup.TryGetValue(cartGroup.SectionId, out var section)) {
+                sectionLookup.TryGetValue(cartGroup.SectionId, out var section);
+
+                if (section == null) {
                     continue;
                 }
 
-                int totalSeats = section.Seats;
+                int seasonTicketCount = await _ticketService.GetSeasonTicketCountBySectionAsync(cartGroup.SectionId);
+                int existingDayTickets = await _ticketService.GetDayTicketCountByMatchAndSectionAsync(cartGroup.MatchId, cartGroup.SectionId);
 
-                // Get season ticket count from pre-fetched data
-                int seasonTicketCount = seasonTicketCounts.TryGetValue(cartGroup.SectionId, out var seasonCount)
-                    ? seasonCount
-                    : 0;
-
-                // Get day ticket count from pre-fetched data
-                var key = (cartGroup.MatchId, cartGroup.SectionId);
-                int existingDayTickets = dayTicketCounts.TryGetValue(key, out var dayCount)
-                    ? dayCount
-                    : 0;
-
-                // Calculate total tickets including what's in cart
                 int totalTickets = seasonTicketCount + existingDayTickets + cartGroup.Quantity;
 
-                if (totalTickets > totalSeats) {
-                    int availableSeats = totalSeats - seasonTicketCount - existingDayTickets;
+                if (totalTickets > section.Seats) {
+                    int availableSeats = section.Seats - seasonTicketCount - existingDayTickets;
                     TempData["Error"] = $"Not enough seats available in {cartGroup.TicketInfo.Ring} {cartGroup.TicketInfo.Location} for the match on {cartGroup.TicketInfo.MatchDate}. " +
                         $"Only {availableSeats} seat(s) available, but you're trying to buy {cartGroup.Quantity}. Please reduce the quantity.";
-                    return true;
+                    return false;
                 }
             }
 
-            return false;
+
+            return true;
         }
     }
 }

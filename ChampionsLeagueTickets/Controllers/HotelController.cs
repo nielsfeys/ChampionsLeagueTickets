@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ChampionsLeagueTickets.Domain.Entities;
 using ChampionsLeagueTickets.Services.Interfaces;
 using ChampionsLeagueTickets.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -10,18 +11,26 @@ namespace ChampionsLeagueTickets.Controllers {
         private readonly IMapper _mapper = mapper;
 
         public async Task<IActionResult> Search() {
-            ViewBag.Clubs = await _clubService.GetAllSellableAsync();
+            try {
+                ViewBag.Clubs = await _clubService.GetAllSellableAsync();
+            } catch (Exception) {
+                TempData["Error"] = "Could not load clubs. Please try again.";
+                ViewBag.Clubs = new List<Club>();
+            }
             return View(new HotelSearchVM());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Search(HotelSearchVM model) {
-            ViewBag.Clubs = await _clubService.GetAllSellableAsync();
-
-            if (!ModelState.IsValid) {
-                return View(model);
+            try {
+                ViewBag.Clubs = await _clubService.GetAllSellableAsync();
+            } catch (Exception) {
+                TempData["Error"] = "Could not load clubs. Please try again.";
+                ViewBag.Clubs = new List<Club>();
             }
+
+            if (!ModelState.IsValid) return View(model);
 
             if (model.CheckOut <= model.CheckIn) {
                 TempData["Error"] = "Check-out date must be after check-in date.";
@@ -32,7 +41,9 @@ namespace ChampionsLeagueTickets.Controllers {
                 var results = await _hotelService.SearchHotelsAsync(
                     model.Destination, model.CheckIn, model.CheckOut, model.Adults, model.RoomQuantity);
 
-                if (results.Count == 0) {
+                if (results == null) {
+                    TempData["Error"] = "API Quota exceeded. Tell website owner to upgrade their plan.";
+                } else if (results.Count == 0) {
                     TempData["Error"] = "No hotels found for the given criteria. Try a different city.";
                 } else {
                     model.Results = _mapper.Map<List<HotelOfferVM>>(results);
@@ -47,7 +58,7 @@ namespace ChampionsLeagueTickets.Controllers {
         public async Task<IActionResult> Book() {
             TempData["Success"] = "Your room(s) has been booked.";
 
-            return RedirectToAction("Search");
+            return RedirectToAction(nameof(Search));
         }
     }
 }

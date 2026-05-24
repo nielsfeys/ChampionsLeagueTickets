@@ -15,33 +15,32 @@ public class HistoryController(ITicketService ticketService, UserManager<Identit
     public async Task<IActionResult> Index() {
         var user = await _userManager.GetUserAsync(User);
 
-        try {
-            var tickets = await _ticketService.GetAllUserTicketsAsync(user!.Id);
-            var History = new HistoryVM {
-                Tickets = tickets ?? []
-            };
-            return View(History);
-        } catch (Exception) {
-            TempData["Error"] = "Could not load your ticket history. Please try again.";
-            return View(new HistoryVM { Tickets = [] });
+        // We know user is logged in because of [Authorize]
+        var tickets = await _ticketService.GetAllUserTicketsAsync(user!.Id);
+
+        var History = new HistoryVM();
+
+        if (tickets == null) {
+            TempData["Error"] = "You don't own any tickets yet";
+            History.Tickets = [];
+        } else {
+            History.Tickets = tickets;
         }
+
+        return View(History);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Cancel(int? ticketId) {
+    public async Task<IActionResult> Cancel(int ticketId) {
         var user = await _userManager.GetUserAsync(User);
 
-        try {
-            if (await _ticketService.CancelTicketAsync(ticketId!.Value, user!.Id)) {
-                TempData["Success"] = "Your ticket has been cancelled.";
-            } else {
-                TempData["Error"] = "Could not cancel your ticket. Please try again.";
-            }
-        } catch (Exception) {
-            TempData["Error"] = "An unexpected error occurred. Please try again.";
+        if (await _ticketService.CancelTicketAsync(ticketId, user!.Id)) {
+            TempData["Success"] = "Your ticket has been cancelled.";
+        } else {
+            TempData["Error"] = "Could not cancel your ticket. Please try again.";
         }
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction("Index");
     }
 }

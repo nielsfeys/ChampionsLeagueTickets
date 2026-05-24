@@ -6,10 +6,6 @@
     ViewData["Title"] = "Season Tickets";
 }
 
-@if (TempData["Error"] != null) {
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
-
 <h1>Season Tickets</h1>
 
 <form id="ClubSelect" asp-action="IndexWithFilter" asp-controller="SeasonTickets" method="get"

@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="ChampionsLeaguetickets.Domain/ChampionsLeaguetickets.Domain.csproj" Id="dc03aef7-3725-4373-a163-6fb4fd43cfb7" DisplayName="ChampionsLeagueTickets.Domain" />
+  <Project Path="ChamionsLeagueTickets.Domain/ChampionsLeagueTickets.Domain.csproj" Id="36e69a86-ece7-4f88-8b35-d53e739b9716" />
   <Project Path="ChampionsLeagueTickets.Repositories/ChampionsLeagueTickets.Repositories.csproj" Id="d4d208a7-7497-438c-8ebb-c51d25fa98a7" />
   <Project Path="ChampionsLeagueTickets.Services/ChampionsLeagueTickets.Services.csproj" Id="f60d2f48-30e9-4098-b4c6-45f79eeb053e" />
   <Project Path="ChampionsLeagueTickets/ChampionsLeagueTickets.csproj" />

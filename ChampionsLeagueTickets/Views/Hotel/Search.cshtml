@@ -23,7 +23,7 @@
             <select asp-for="Destination" class="form-control">
             @foreach(var club in ViewBag.Clubs)
                 {
-                    <option value="@club.CityId">@club.Name</option>
+                    <option value="@club.City">@club.Name</option>
                 }
             </select>
         </div>

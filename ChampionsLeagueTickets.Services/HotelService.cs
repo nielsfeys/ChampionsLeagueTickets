@@ -1,8 +1,6 @@
 ﻿using ChampionsLeagueTickets.Services.DTOs;
 using ChampionsLeagueTickets.Services.Interfaces;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using System.Net;
 using System.Text.Json;
 
 namespace ChampionsLeagueTickets.Services;
@@ -20,9 +18,14 @@ public class HotelService : IHotelService {
         _httpClient.DefaultRequestHeaders.Add("x-rapidapi-host", _apiHost);
     }
 
-    public async Task<List<HotelOfferDTO>?> SearchHotelsAsync(int cityId, DateOnly checkIn, DateOnly checkOut, int adults, int roomQuantity) {
+    public async Task<List<HotelOfferDTO>> SearchHotelsAsync(string destination, DateOnly checkIn, DateOnly checkOut, int adults, int roomQuantity) {
+        // Step 1: Resolve destination to a dest_id
+        var destId = await ResolveDestinationAsync(destination);
+        if (destId is null) return [];
+
+        // Step 2: Search hotels using the dest_id
         var searchUrl = $"/api/v1/hotels/searchHotels" +
-                        $"?dest_id={cityId}" +
+                        $"?dest_id={destId}" +
                         $"&search_type=CITY" +
                         $"&arrival_date={checkIn:yyyy-MM-dd}" +
                         $"&departure_date={checkOut:yyyy-MM-dd}" +
@@ -31,9 +34,6 @@ public class HotelService : IHotelService {
                         $"&currency_code=EUR";
 
         var response = await _httpClient.GetAsync(searchUrl);
-
-        if (response.StatusCode == HttpStatusCode.TooManyRequests) return null;
-
         if (!response.IsSuccessStatusCode) return [];
 
         var json = await response.Content.ReadAsStringAsync();
@@ -41,7 +41,8 @@ public class HotelService : IHotelService {
 
         var results = new List<HotelOfferDTO>();
 
-        if (!doc.RootElement.TryGetProperty("data", out var data) || !data.TryGetProperty("hotels", out var hotels)) {
+        if (!doc.RootElement.TryGetProperty("data", out var data) ||
+            !data.TryGetProperty("hotels", out var hotels)) {
             return results;
         }
 
@@ -68,5 +69,31 @@ public class HotelService : IHotelService {
         }
 
         return results;
+    }
+
+    private async Task<string?> ResolveDestinationAsync(string query) {
+        var url = $"/api/v1/hotels/searchDestination?query={Uri.EscapeDataString(query)}";
+        var response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode) return null;
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+
+        if (!doc.RootElement.TryGetProperty("data", out var data)) return null;
+
+        // Pick the first CITY result
+        foreach (var item in data.EnumerateArray()) {
+            if (item.TryGetProperty("search_type", out var type) &&
+                type.GetString() == "CITY" &&
+                item.TryGetProperty("dest_id", out var destId)) {
+                return destId.GetString();
+            }
+        }
+
+        // Fallback: return the first result regardless of type
+        var first = data.EnumerateArray().FirstOrDefault();
+        return first.ValueKind != JsonValueKind.Undefined && first.TryGetProperty("dest_id", out var fallback)
+            ? fallback.GetString()
+            : null;
     }
 }

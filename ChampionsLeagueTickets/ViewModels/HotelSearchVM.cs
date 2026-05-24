@@ -3,7 +3,7 @@
 namespace ChampionsLeagueTickets.ViewModels {
     public class HotelSearchVM {
         [Required]
-        public int Destination { get; set; }
+        public string Destination { get; set; } = String.Empty;
         
         [Required]
         public DateOnly CheckIn { get; set; } = DateOnly.FromDateTime(DateTime.Today.AddDays(1));

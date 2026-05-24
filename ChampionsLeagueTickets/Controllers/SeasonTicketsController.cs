@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using ChampionsLeagueTickets.Domain.Entities;
 using ChampionsLeagueTickets.Extensions;
+using ChampionsLeagueTickets.Services;
 using ChampionsLeagueTickets.Services.Interfaces;
 using ChampionsLeagueTickets.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -13,12 +14,7 @@ public class SeasonTicketsController(IClubService clubService, IStadiumSectionSe
     private readonly IMapper _mapper = mapper;
 
     public async Task<IActionResult> Index() {
-        try {
-            ViewBag.Clubs = await _clubService.GetAllSellableAsync();
-        } catch (Exception) {
-            TempData["Error"] = "Could not load clubs. Please try again.";
-            ViewBag.Clubs = new List<Club>();
-        }
+        ViewBag.Clubs = await _clubService.GetAllSellableAsync();
         return View();
     }
 
@@ -27,54 +23,54 @@ public class SeasonTicketsController(IClubService clubService, IStadiumSectionSe
             return RedirectToAction(nameof(Index));
         }
 
-        try {
-            IEnumerable<StadiumSection>? StadiumSections = await _stadiumSectionService.GetAllByClubNameAsync(clubName);
-            StadiumVM StadiumVM = new();
+        IEnumerable<StadiumSection>? StadiumSections = await _stadiumSectionService.GetAllByClubNameAsync(clubName);
+        StadiumVM StadiumVM = new();
 
-            if (StadiumSections != null) {
-                StadiumVM.SectionVMs = _mapper.Map<List<SectionVM>>(StadiumSections);
-            }
-
-            return PartialView("_seasonTicketsDetails", StadiumVM);
-        } catch (Exception) {
-            return PartialView("_seasonTicketsDetails", new StadiumVM());
+        if (StadiumSections != null) {
+            StadiumVM.SectionVMs = _mapper.Map<List<SectionVM>>(StadiumSections);
         }
+
+        return PartialView("_seasonTicketsDetails", StadiumVM);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AddToCart(int sectionId) {
-        try {
-            StadiumSection? stadiumSection = await _stadiumSectionService.FindByIdAsync(sectionId);
-            if (stadiumSection == null) {
-                return NotFound();
-            }
+    public async Task<IActionResult> AddToCart(int? sectionId) {
+        //Should never get triggered
+        if (!sectionId.HasValue) {
+            return NotFound();
+        }
 
-            var shoppingCartVM = HttpContext.Session.GetObject<ShoppingCartVM>("ShoppingCart") ?? new ShoppingCartVM();
-            var existingItem = shoppingCartVM.SeasonTickets.FirstOrDefault(x => x.HomeClubName == stadiumSection.HomeTeamNavigation.Name);
+        //Should never get triggered
+        StadiumSection? stadiumSection = await _stadiumSectionService.FindByIdAsync(sectionId.Value);
+        if (stadiumSection == null) {
+            return NotFound();
+        }
 
-            //Only 1 season ticket per team
-            if (existingItem != null) {
-                TempData["Error"] = "You already have a season ticket for this club.";
-                return RedirectToAction(nameof(Index));
-            }
+        var shoppingCartVM = HttpContext.Session.GetObject<ShoppingCartVM>("ShoppingCart") ?? new ShoppingCartVM();
 
-            shoppingCartVM.SeasonTickets.Add(new SeasonTicketVM {
-                SectionId = sectionId,
-                HomeClubName = stadiumSection.HomeTeamNavigation.Name,
-                Ring = stadiumSection.Ring,
-                Location = stadiumSection.Location,
-                Price = stadiumSection.Price * SeasonTicketVM.PriceMultiplier,
-                DateCreated = DateOnly.FromDateTime(DateTime.Now)
-            });
+        var existingItem = shoppingCartVM.SeasonTickets.FirstOrDefault(x => x.HomeClubName == stadiumSection.HomeTeamNavigation.Name);
 
-            HttpContext.Session.SetObject("ShoppingCart", shoppingCartVM);
-            TempData["Success"] = "Season ticket added to cart.";
-            return RedirectToAction(nameof(Index));
-        } catch (Exception) {
-            TempData["Error"] = "Could not add season ticket to cart. Please try again.";
+        //Only 1 season ticket per team
+        if (existingItem != null) {
+            TempData["Error"] = "You already have a season ticket for this club.";
             return RedirectToAction(nameof(Index));
         }
+
+        shoppingCartVM.SeasonTickets.Add(new SeasonTicketVM {
+            SectionId = sectionId.Value,
+            HomeClubName = stadiumSection.HomeTeamNavigation.Name,
+            Ring = stadiumSection.Ring,
+            Location = stadiumSection.Location,
+            Price = stadiumSection.Price * SeasonTicketVM.PriceMultiplier,
+            DateCreated = DateOnly.FromDateTime(DateTime.Now)
+        });
+
+        HttpContext.Session.SetObject("ShoppingCart", shoppingCartVM);
+
+        TempData["Success"] = "Season ticket added to cart.";
+        return RedirectToAction(nameof(Index));
+
     }
 }
 
